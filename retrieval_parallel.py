@@ -11,6 +11,9 @@ from functools import partial
 import heapq
 from threading import Thread, Event
 import queue
+from datetime import datetime, timedelta
+
+# [Previous functions remain exactly the same: combine_all_sentences, remove_duplicates, retrieve_top_k_sentences, process_single_example, writer_thread]
 
 def combine_all_sentences(knowledge_file):
     sentences, urls = [], []
@@ -29,7 +32,7 @@ def remove_duplicates(sentences, urls):
     return df['document_in_sentences'].tolist(), df['sentence_urls'].tolist()
                 
 def retrieve_top_k_sentences(query, document, urls, top_k):
-    tokenized_docs = [nltk.word_tokenize(doc) for doc in document]
+    tokenized_docs = [nltk.word_tokenize(doc) for doc in document[:top_k]]
     bm25 = BM25Okapi(tokenized_docs)
     
     scores = bm25.get_scores(nltk.word_tokenize(query))
@@ -46,17 +49,14 @@ def process_single_example(idx, example, args, result_queue, counter, lock):
         
         start_time = time.time()
         
-        # Load the knowledge store for this example
         document_in_sentences, sentence_urls, num_urls_this_claim = combine_all_sentences(
             os.path.join(args.knowledge_store_dir, f"{idx}.json")
         )
         
         print(f"Obtained {len(document_in_sentences)} sentences from {num_urls_this_claim} urls.")
         
-        # Remove duplicate sentences in knowledge store
         document_in_sentences, sentence_urls = remove_duplicates(document_in_sentences, sentence_urls)
         
-        # Retrieve top_k sentences with bm25
         query = example["claim"] + " " + " ".join(example['hypo_fc_docs'])
         top_k_sentences, top_k_urls = retrieve_top_k_sentences(
             query, document_in_sentences, sentence_urls, args.top_k
@@ -75,9 +75,7 @@ def process_single_example(idx, example, args, result_queue, counter, lock):
             "hypo_fc_docs": example['hypo_fc_docs']
         }
         
-        # Put the result in the queue with its index for ordering
         result_queue.put((idx, result))
-        
         return True
     except Exception as e:
         print(f"Error processing example {idx}: {str(e)}")
@@ -85,21 +83,17 @@ def process_single_example(idx, example, args, result_queue, counter, lock):
         return False
 
 def writer_thread(output_file, result_queue, total_examples, stop_event):
-    """Thread that writes results to file in order."""
     next_index = 0
     pending_results = []
     
     with open(output_file, "w", encoding="utf-8") as f:
         while not (stop_event.is_set() and result_queue.empty()):
             try:
-                # Get result with timeout to check stop_event periodically
                 idx, result = result_queue.get(timeout=1)
                 
-                # Add to pending results
-                if result is not None:  # Skip failed results
+                if result is not None:
                     heapq.heappush(pending_results, (idx, result))
                 
-                # Write any results that are next in sequence
                 while pending_results and pending_results[0][0] == next_index:
                     _, result_to_write = heapq.heappop(pending_results)
                     f.write(json.dumps(result_to_write, ensure_ascii=False) + "\n")
@@ -109,8 +103,15 @@ def writer_thread(output_file, result_queue, total_examples, stop_event):
             except queue.Empty:
                 continue
 
+def format_time(seconds):
+    """Format time duration nicely."""
+    return str(timedelta(seconds=round(seconds)))
+
 def main(args):
-    # Load target examples
+    script_start = time.time()
+    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"Script started at: {start_time}")
+    
     with open(args.target_data, "r", encoding="utf-8") as json_file:
         target_examples = json.load(json_file)
 
@@ -119,24 +120,19 @@ def main(args):
     
     print(f"Total examples to process: {args.end - args.start}")
 
-    # Prepare the list of examples to process
     files_to_process = list(range(args.start, args.end))
     examples_to_process = [(idx, target_examples[idx]) for idx in files_to_process]
     
-    # Determine number of workers
     num_workers = min(args.workers if args.workers > 0 else cpu_count(), len(files_to_process))
     print(f"Using {num_workers} workers to process {len(files_to_process)} examples")
 
-    # Create a manager for shared objects
     with Manager() as manager:
         counter = manager.Value('i', 0)
-        lock = manager.Lock()  # Create a lock for synchronization
+        lock = manager.Lock()
         args.total_examples = len(files_to_process)
         
-        # Create a queue for results
         result_queue = manager.Queue()
         
-        # Create and start the writer thread
         stop_event = Event()
         writer = Thread(
             target=writer_thread,
@@ -144,27 +140,36 @@ def main(args):
         )
         writer.start()
 
-        # Create partial function with fixed arguments
         process_func = partial(
             process_single_example,
             args=args,
             result_queue=result_queue,
             counter=counter,
-            lock=lock  # Pass the lock to the processing function
+            lock=lock
         )
         
-        # Process examples in parallel
         with Pool(num_workers) as pool:
             results = pool.starmap(process_func, examples_to_process)
         
-        # Signal writer thread to stop and wait for it to finish
         stop_event.set()
         writer.join()
         
-        # Calculate success rate
         successful = sum(1 for r in results if r)
         print(f"\nSuccessfully processed {successful} out of {len(files_to_process)} examples")
         print(f"Results written to {args.json_output}")
+        
+        # Calculate and display timing information
+        total_time = time.time() - script_start
+        avg_time = total_time / len(files_to_process)
+        end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        print("\nTiming Summary:")
+        print(f"Start time: {start_time}")
+        print(f"End time: {end_time}")
+        print(f"Total runtime: {format_time(total_time)} (HH:MM:SS)")
+        print(f"Average time per example: {avg_time:.2f} seconds")
+        if successful > 0:
+            print(f"Processing speed: {successful / total_time:.2f} examples per second")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

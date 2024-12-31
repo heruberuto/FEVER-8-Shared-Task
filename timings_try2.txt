@@ -1,0 +1,85 @@
+python hyde_fc_generation_optimized.py --target_data "data_store/averitec/dev.json" --json_output "data_store/dev_hyde_fc_llama3_1_optimized.json"
+
+Timing Statistics:
+Total Runtime: 0:42:55
+Average Batch Time: 159.23 seconds
+Average Time per Example: 5.15 seconds
+Throughput: 0.19 examples/second
+
+Saving results...
+Script completed at: 2024-12-11 13:30:08
+Total runtime: 0:42:55
+
+
+python retrieval_parallel.py --knowledge_store_dir "knowledge_store/dev" --target_data "data_store/dev_hyde_fc_llama3_1_optimized.json" --json_output "data_store/dev_retrieval_top_k_optimized_2.json" --top_k 1000
+
+Timing Summary:
+Start time: 2024-12-13 14:55:30
+End time: 2024-12-13 14:59:55
+Total runtime: 0:04:24 (HH:MM:SS)
+Average time per example: 0.53 seconds
+Processing speed: 1.89 examples per second
+
+
+python reranking.py --target_data "data_store/dev_retrieval_top_k_optimized_2.json" --json_output "data_store/dev_reranking_top_k_optimized_2.json" --retrieved_top_k 500
+
+
+Timing Summary:
+Start time: 2024-12-13 17:58:40
+End time: 2024-12-13 23:51:46
+Total runtime: 5:53:06 (HH:MM:SS)
+Average time per example: 42.37 seconds
+Processing speed: 0.02 examples per second
+
+
+python question_generation_optimized.py --reference_corpus "data_store/averitec/dev.json" --top_k_target_knowledge "data_store/dev_reranking_top_k_optimized_2.json" --output_questions "data_store/dev_top_k_qa_optimized_2.json" --model "meta-llama/Meta-Llama-3-8B-Instruct"
+
+Start time: 2024-12-15 08:35:15
+End time: 2024-12-15 09:11:27
+Total runtime: 0:36:12
+Setup time: 0:00:38
+Average time per example: 3.98s
+Processing time: 0:35:34
+Results written to: data_store/dev_top_k_qa_optimized_2.json
+
+python veracity_prediction_optimized.py --target_data "data_store/dev_top_k_qa_optimized_2.json" --output_file "data_store/dev_veracity_prediction_optimized_2.json" --model "humane-lab/Meta-Llama-3.1-8B-HerO"
+
+Timing Summary:
+Start time: 2024-12-15 20:26:27
+End time: 2024-12-15 20:32:36
+Total runtime: 0:06:09
+Data loading time: 0:00:00
+Model initialization time: 0:02:26
+Processing time: 0:03:43
+Average time per example: 0.45s
+Processing speed: 2.24 examples per second
+
+python averitec_evaluate.py --prediction_file "data_store/dev_veracity_prediction_optimized_2.json" --label_file "data_store/averitec/dev.json"
+
+Question-only score (HU-meteor):             0.5516021511351755
+Question-answer score (HU-meteor):           0.373918863121721
+====================
+Veracity F1 scores:
+ * Supported:                                0.6473029045643154
+ * Refuted:                                  0.8145896656534954
+ * Not Enough Evidence:                      0.15384615384615385
+ * Conflicting Evidence/Cherrypicking:       0.12244897959183673
+ * macro:                                    0.43454692591395033
+ * acc:                                      0.706
+--------------------
+AVeriTeC scores:
+ * Veracity scores (meteor @ 0.1):           0.704
+ * Veracity scores (meteor @ 0.2):           0.65
+ * Veracity scores (meteor @ 0.25):          0.58
+ * Veracity scores (meteor @ 0.3):           0.478
+ * Veracity scores (meteor @ 0.4):           0.264
+ * Veracity scores (meteor @ 0.5):           0.136
+--------------------
+AVeriTeC scores by type @ 0.25:
+ * Veracity scores (Event/Property Claim):   0.35223013719508045
+ * Veracity scores (Position Statement):     0.3687638943064949
+ * Veracity scores (Causal Claim):           0.259638551023183
+ * Veracity scores (Numerical Claim):        0.3431252353054456
+ * Veracity scores (Quote Verification):     0.325834828650027
+
+ Overall average per sample: 5.15 + 0.53 +42.37 + 3.90 + 0.43  = ca 150sec -> 1 Minute
