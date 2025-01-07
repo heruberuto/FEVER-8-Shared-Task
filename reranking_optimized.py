@@ -100,7 +100,7 @@ def main(args):
                 claim = example['claim']
                 query = [get_detailed_instruct(task, claim)] + [get_detailed_instruct(task, le) for le in example['hypo_fc_docs'] if len(le.strip()) > 0]
                 query_length = len(query)
-                sentences = [sent['sentence'] for sent in example[f'top_{2}']][:args.retrieved_top_k]
+                sentences = [sent['sentence'] for sent in example[f'top_{10000}']][:args.retrieved_top_k]
                 
                 st = time.time()
                 with torch.no_grad():
@@ -112,7 +112,7 @@ def main(args):
                     scores = model.similarity(hyde_vector, embeddings[query_length:])[0].numpy()
                     
                     top_k_idx = np.argsort(scores)[::-1]
-                    results = [example['top_2'][i] for i in top_k_idx]
+                    results = [example['top_10000'][i] for i in top_k_idx]
                     top_k_sentences_urls = select_top_k(claim, results, args.top_k)
                     print(f"Top {args.top_k} retrieved. Time elapsed: {time.time() - st:.2f}s")
 

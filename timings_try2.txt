@@ -21,7 +21,7 @@ Average time per example: 0.53 seconds
 Processing speed: 1.89 examples per second
 
 
-python reranking.py --target_data "data_store/dev_retrieval_top_k_optimized_2.json" --json_output "data_store/dev_reranking_top_k_optimized_2.json" --retrieved_top_k 500
+python reranking_optimized.py --target_data "data_store/dev_retrieval_top_k_optimized_2.json" --json_output "data_store/dev_reranking_top_k_optimized_2.json" --retrieved_top_k 500
 
 
 Timing Summary:
