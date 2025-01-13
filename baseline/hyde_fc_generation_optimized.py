@@ -23,7 +23,7 @@ class VLLMGenerator:
             enforce_eager=True,
             trust_remote_code=True,
             # quantization="bitsandbytes",
-            dtype="half",
+            # dtype="half",
             # load_format="bitsandbytes",
             max_num_batched_tokens=4096,
             max_num_seqs=batch_size

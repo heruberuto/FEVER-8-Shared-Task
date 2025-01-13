@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Get SYSTEM_NAME from run_system.sh environment
-eval $(grep '^SYSTEM_NAME=' run_system.sh)
+eval $(grep '^SYSTEM_NAME=' system_inference.sh)
+
 
 # Create system-specific directory
 mkdir -p "data_store/${SYSTEM_NAME}"
@@ -56,8 +57,16 @@ run_script() {
     return $status
 }
 
-# Run the system script
-run_script "Main Execution" ./system_inference.sh || exit 1
+# First run the data download script
+run_script "Data Download" ./download_data.sh || {
+    log_timing "Error: Data download failed"
+    exit 1
+}
+
+run_script "Main Execution" ./system_inference.sh || {
+    log_timing "Error: Main execution failed"
+    exit 1
+}
 
 # Calculate and display total execution time
 total_duration=$((SECONDS - start_time_total))

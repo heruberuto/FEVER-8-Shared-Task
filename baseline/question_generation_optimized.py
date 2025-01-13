@@ -75,7 +75,7 @@ def main(args):
         gpu_memory_utilization=0.95,
         enforce_eager=True,
         trust_remote_code=True,
-        dtype="half",
+        # dtype="half",
     )
     llm.get_tokenizer().pad_token = "<|end_of_text|>"
     print(f"Model loaded in: {format_time(time.time() - model_start)}")

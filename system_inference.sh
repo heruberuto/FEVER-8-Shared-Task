@@ -1,38 +1,57 @@
 #!/bin/bash
 
 # System configuration
-SYSTEM_NAME="Baseline"  # Change this to "HerO", "Baseline", etc.
+SYSTEM_NAME="baseline"  # Change this to "HerO", "Baseline", etc.
+SPLIT="dev"  # Change this to "dev", or "test"
 
-export HUGGING_FACE_HUB_TOKEN="YOUR KEY"
-export HF_HOME="/opt/dlami/nvme/huggingface_cache"
+# Set paths based on whether it is on AWS instance
+# if [ -d "/opt/dlami/nvme" ]; then
+#     BASE_DIR="/opt/dlami/nvme"
+# else
+#     BASE_DIR="."  # Current directory
+# fi
+
+BASE_DIR="."  # Current directory
+
+DATA_STORE="${BASE_DIR}/data_store"
+KNOWLEDGE_STORE="${BASE_DIR}/knowledge_store"
+export HF_HOME="${BASE_DIR}/huggingface_cache"
+
+# Create necessary directories
+mkdir -p "${DATA_STORE}/averitec"
+mkdir -p "${DATA_STORE}/${SYSTEM_NAME}"
+mkdir -p "${KNOWLEDGE_STORE}/${SPLIT}"
+mkdir -p "${HF_HOME}"
+
+export HUGGING_FACE_HUB_TOKEN="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"
 
 # Execute each script from src directory
 python baseline/hyde_fc_generation_optimized.py \
-    --target_data "data_store/averitec/dev.json" \
-    --json_output "data_store/${SYSTEM_NAME}/dev_hyde_fc.json" || exit 1
+    --target_data "${DATA_STORE}/averitec/${SPLIT}.json" \
+    --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_hyde_fc.json" || exit 1
 
 python baseline/retrieval_optimized.py \
-    --knowledge_store_dir "knowledge_store/dev" \
-    --target_data "data_store/${SYSTEM_NAME}/dev_hyde_fc.json" \
-    --json_output "data_store/${SYSTEM_NAME}/dev_retrieval_top_k.json" \
-    --top_k 10000 || exit 1
+    --knowledge_store_dir "${KNOWLEDGE_STORE}/${SPLIT}" \
+    --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_hyde_fc.json" \
+    --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_retrieval_top_k.json" \
+    --top_k 5000 || exit 1
 
 python baseline/reranking_optimized.py \
-    --target_data "data_store/${SYSTEM_NAME}/dev_retrieval_top_k.json" \
-    --json_output "data_store/${SYSTEM_NAME}/dev_reranking_top_k.json" \
+    --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_retrieval_top_k.json" \
+    --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_reranking_top_k.json" \
     --retrieved_top_k 300 || exit 1
 
 python baseline/question_generation_optimized.py \
-    --reference_corpus "data_store/averitec/dev.json" \
-    --top_k_target_knowledge "data_store/${SYSTEM_NAME}/dev_reranking_top_k.json" \
-    --output_questions "data_store/${SYSTEM_NAME}/dev_top_k_qa.json" \
+    --reference_corpus "${DATA_STORE}/averitec/${SPLIT}.json" \
+    --top_k_target_knowledge "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_reranking_top_k.json" \
+    --output_questions "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_top_k_qa.json" \
     --model "meta-llama/Meta-Llama-3-8B-Instruct" || exit 1
 
 python baseline/veracity_prediction_optimized.py \
-    --target_data "data_store/${SYSTEM_NAME}/dev_top_k_qa.json" \
-    --output_file "data_store/${SYSTEM_NAME}/dev_veracity_prediction.json" \
+    --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_top_k_qa.json" \
+    --output_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
     --model "humane-lab/Meta-Llama-3.1-8B-HerO" || exit 1
 
 python baseline/averitec_evaluate.py \
-    --prediction_file "data_store/${SYSTEM_NAME}/dev_veracity_prediction.json" \
-    --label_file "data_store/averitec/dev.json" || exit 1
+    --prediction_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
+    --label_file "${DATA_STORE}/averitec/${SPLIT}.json" || exit 1
