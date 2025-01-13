@@ -13,7 +13,7 @@ The shared task evaluates fact-checking systems on AVeriTeC across three dimensi
 
 Every system participating in the shared task is expected to produce reproducible code. Subsequently, all participating systems will be evaluated during inference on the test set by the shared task organisers on a virtual machine. 
 
-The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2/instance-types/g5/) on AWS. The configuration of the virtual machine are:
+The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2/instance-types/g5/) on AWS. The configuration of the virtual machine is:
 - GPU: Nvidia A10G, with 23GB memory
 - CPU: 8 vCPUs
 - RAM: 32GB
@@ -22,7 +22,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
 
  We provide two methods for participants to test whether their code will run on the virtual machine:
 
- 1. Docker Image
+ #### Docker Image
 
  We provide a Docker image with the exact configuration as the EC2 virtual machine. You can download the following image:
  - An empty docker image, preconfigured like the virtual machine, [here]()
@@ -31,7 +31,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
  To load the docker, execute `gunzip -c averitec.tar.gz | docker load` and to start the docker with the image, run `docker run --gpus all -it averitec`.
 
 
- 2. Amazon AMI
+ #### Amazon AMI
 
 To fully ensure that your system will run on the virtual machine, you can configure an identical VM instance yourself on AWS. The Image name is: `Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 22.04) 20250107` and the AMI-ID is `ami-0940d6cb015d3bae4`, configured with 120 GB of root storage. 
 
@@ -62,7 +62,8 @@ sudo systemctl restart docker
 All systems will be executed on the EC2 instance storage `/opt/dlami/nvme`.
 
 
-### Efficiency
+### Efficiency
+
 [ADD DESCRIPTION]
 
 ## Preparing your submission
