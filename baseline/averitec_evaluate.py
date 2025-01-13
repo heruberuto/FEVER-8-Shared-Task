@@ -5,8 +5,25 @@ import numpy as np
 import sklearn
 import nltk
 import copy
+import os
 from nltk import word_tokenize
 
+def download_nltk_data(package_name, download_dir='/opt/dlami/nvme/nltk_data'):
+    # Ensure the download directory exists
+    os.makedirs(download_dir, exist_ok=True)
+    
+    # Set NLTK data path
+    nltk.data.path.append(download_dir)
+    
+    try:
+        # Try to find the resource
+        nltk.data.find(f'tokenizers/{package_name}')
+        print(f"Package '{package_name}' is already downloaded")
+    except LookupError:
+        # If resource isn't found, download it
+        print(f"Downloading {package_name}...")
+        nltk.download(package_name, download_dir=download_dir)
+        print(f"Successfully downloaded {package_name}")
 
 def pairwise_meteor(candidate, reference):
     return nltk.translate.meteor_score.single_meteor_score(
@@ -280,6 +297,11 @@ if __name__ == "__main__":
 
     with open(args.label_file) as f:
         references = json.load(f)
+
+    download_nltk_data('punkt')
+    download_nltk_data('punkt_tab')
+    download_nltk_data('wordnet')
+
     
     # Had a bug in first run where 3 instances where not annotated.
     predictions_dict = {x["claim_id"]:x for x in predictions}

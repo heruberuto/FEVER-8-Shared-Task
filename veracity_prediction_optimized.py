@@ -82,7 +82,8 @@ def main(args):
         max_model_len=4096,
         gpu_memory_utilization=0.95,
         enforce_eager=True,
-        trust_remote_code=True
+        trust_remote_code=True,
+        # dtype="bfloat16"
     )
     print(f"Model initialization took: {format_time(time.time() - model_start)}")
 

@@ -1,0 +1,80 @@
+Timing Statistics:
+Total Runtime: 0:42:52
+Average Batch Time: 158.09 seconds
+Average Time per Example: 5.14 seconds
+Throughput: 0.19 examples/second
+
+Saving results...
+Script completed at: 2025-01-12 21:15:58
+Total runtime: 0:42:52
+
+----------------------------------------------------
+Results written to data_store/dev_retrieval_top_k_optimized.json
+Timing Summary:
+Start time: 2025-01-12 21:24:41
+End time: 2025-01-12 21:50:28
+Total runtime: 0:25:47 (HH:MM:SS)
+Average time per example: 3.09 seconds
+Processing speed: 0.32 examples per second
+
+----------------------------------------------------
+
+
+Timing Summary:
+Start time: 2025-01-12 22:22:33
+End time: 2025-01-13 00:25:03
+Total runtime: 2:02:29 (HH:MM:SS)
+Average time per example: 14.70 seconds
+Processing speed: 0.07 examples per second
+
+----------------------------------------------------
+
+Timing Summary:
+Start time: 2025-01-13 06:39:22
+End time: 2025-01-13 07:23:39
+Total runtime: 0:44:17
+Setup time: 0:03:03
+Processing time: 0:41:13
+Results written to: data_store/dev_top_k_qa_optimized.json
+
+----------------------------------------------------
+
+Timing Summary:
+Start time: 2025-01-13 07:34:38
+End time: 2025-01-13 07:44:15
+Total runtime: 0:09:37
+Data loading time: 0:00:00
+Model initialization time: 0:05:05
+Processing time: 0:04:32
+Average time per example: 0.54s
+Processing speed: 1.84 examples per second
+
+----------------------------------------------------
+
+
+
+uestion-only score (HU-meteor):             0.5404668324529247
+Question-answer score (HU-meteor):           0.35846056973125223
+====================
+Veracity F1 scores:
+ * Supported:                                0.5967741935483871
+ * Refuted:                                  0.8018720748829953
+ * Not Enough Evidence:                      0.14285714285714285
+ * Conflicting Evidence/Cherrypicking:       0.10909090909090909
+ * macro:                                    0.41264858009485855
+ * acc:                                      0.676
+--------------------
+AVeriTeC scores:
+ * Veracity scores (meteor @ 0.1):           0.672
+ * Veracity scores (meteor @ 0.2):           0.608
+ * Veracity scores (meteor @ 0.25):          0.518
+ * Veracity scores (meteor @ 0.3):           0.412
+ * Veracity scores (meteor @ 0.4):           0.218
+ * Veracity scores (meteor @ 0.5):           0.11
+--------------------
+AVeriTeC scores by type @ 0.25:
+ * Veracity scores (Event/Property Claim):   0.33056451188446867
+ * Veracity scores (Position Statement):     0.3372769851228631
+ * Veracity scores (Causal Claim):           0.2555860336454812
+ * Veracity scores (Numerical Claim):        0.31696944766913604
+ * Veracity scores (Quote Verification):     0.27194254559837

@@ -13,7 +13,24 @@ from threading import Thread, Event
 import queue
 from datetime import datetime, timedelta
 
-# [Previous functions remain exactly the same: combine_all_sentences, remove_duplicates, retrieve_top_k_sentences, process_single_example, writer_thread]
+
+def download_nltk_data(package_name, download_dir='/opt/dlami/nvme/nltk_data'):
+    # Ensure the download directory exists
+    os.makedirs(download_dir, exist_ok=True)
+    
+    # Set NLTK data path
+    nltk.data.path.append(download_dir)
+    
+    try:
+        # Try to find the resource
+        nltk.data.find(f'tokenizers/{package_name}')
+        print(f"Package '{package_name}' is already downloaded")
+    except LookupError:
+        # If resource isn't found, download it
+        print(f"Downloading {package_name}...")
+        nltk.download(package_name, download_dir=download_dir)
+        print(f"Successfully downloaded {package_name}")
+
 
 def combine_all_sentences(knowledge_file):
     sentences, urls = [], []
@@ -111,6 +128,9 @@ def main(args):
     script_start = time.time()
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"Script started at: {start_time}")
+
+    download_nltk_data('punkt')
+    download_nltk_data('punkt_tab')
     
     with open(args.target_data, "r", encoding="utf-8") as json_file:
         target_examples = json.load(json_file)
