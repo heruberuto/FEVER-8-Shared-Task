@@ -6,7 +6,7 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 # Create and activate environment
 conda create -n hero python=3.12 -y  # Added -y for non-interactive
-sleep 2  # Increased sleep time for safety
+sleep 2  # Increased sleep time for readability
 
 source activate hero
 sleep 2
