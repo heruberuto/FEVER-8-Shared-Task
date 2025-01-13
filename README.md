@@ -22,7 +22,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
 
  We provide two methods for participants to test whether their code will run on the virtual machine:
 
- #### Docker Image
+ #### Docker Image
 
  We provide a Docker image with the exact configuration as the EC2 virtual machine. You can download the following image:
  - An empty docker image, preconfigured like the virtual machine, [here]()
