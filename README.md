@@ -1,13 +1,13 @@
-# AVeriTeC Shared Task 2025
+# FEVER Shared Task 2025
 
-[ADD DESCRIPTION]
+[ADD DESCRIPTION FROM WEBSITE ONCE THERE]
 
 ## Evaluation of Shared Task Systems
 
 The shared task evaluates fact-checking systems on AVeriTeC across three dimensions:
 
 ### Prediction performance
-[ADD]
+[ADD ONCE READY]
 
 ### Reproducibility
 
