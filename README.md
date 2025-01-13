@@ -13,7 +13,7 @@ The shared task evaluates fact-checking systems on AVeriTeC across three dimensi
 
 Every system participating in the shared task is expected to produce reproducible code. Subsequently, all participating systems will be evaluated during inference on the test set by the shared task organisers on a virtual machine. 
 
-The virtual machine is a [g5.2xlarge EC2 instance] (https://aws.amazon.com/de/ec2/instance-types/g5/) on AWS. The configuration of the virtual machine are:
+The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2/instance-types/g5/) on AWS. The configuration of the virtual machine are:
 - GPU: Nvidia A10G, with 23GB memory
 - CPU: 8 vCPUs
 - RAM: 32GB
