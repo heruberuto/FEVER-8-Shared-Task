@@ -20,7 +20,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
 - Storage: 450GB (including the AVeriTeC knowledge base)
 
 
- We provide two methods for participants to test whether their code will run on the virtual machine:
+ We provide two methods for participants to make sure that their code will run on the virtual machine:
 
  #### Docker Image
 
