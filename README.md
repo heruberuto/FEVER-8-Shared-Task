@@ -9,7 +9,7 @@ The shared task evaluates fact-checking systems on AVeriTeC across three dimensi
 ### Prediction performance
 [ADD]
 
-### Reproduciability
+### Reproducibility
 
 Every system participating in the shared task is expected to produce reproducible code. Subsequently, all participating systems will be evaluated during inference on the test set by the shared task organisers on a virtual machine. 
 
