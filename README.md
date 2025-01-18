@@ -25,7 +25,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
  #### Docker Image
 
  We provide a Docker image with the exact configuration as the EC2 virtual machine. You can download the following image:
- - An empty docker image, preconfigured like the virtual machine, [here]()
+ - An empty docker image, preconfigured like the virtual machine, [here](https://drive.google.com/file/d/1-AiMrgjWUmcSPFehCF7wI13HJerT3MlO/view?usp=sharing)
  - A docker image with an installation of the baseline system, [here, TODO]()
 
  To load the docker, execute `gunzip -c averitec.tar.gz | docker load` and to start the docker with the image, run `docker run --gpus all -it averitec`.
