@@ -7,7 +7,12 @@
 The shared task evaluates fact-checking systems on AVeriTeC across three dimensions:
 
 ### Prediction performance
-[ADD ONCE READY]
+The AVeriTec scoring is built on the [FEVER scorer](https://github.com/sheffieldnlp/fever-scorer). The scoring script can be found on the [AVeriTeC Dataset page](https://fever.ai/dataset/averitec.html).
+
+- For the Ev2R score, the following changes are made to the FEVER scorer:
+Claims in Fact-Checking datasets are typically supported or refuted by evidence, or there is not enough evidence. We add a fourth class: conflicting evidence/cherry-picking. This covers both conflicting evidence, and technically true claims that mislead by excluding important context, i.e., the claim has both supporting and refuting evidence.
+- Unlike in FEVER using a closed source of evidence such as Wikipedia, AVERITEC is intended for use with evidence retrieved from the open web. Since the same evidence may be found in different sources, we cannot rely on exact matching to score retrieved evidence. As such, we instead rely on approximate matching. Specifically, we use the Ev2R to find an optimal matching of provided evidence to annotated evidence.
+
 
 ### Reproducibility
 
