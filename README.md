@@ -73,13 +73,11 @@ At inference time, a submitted system must verify a single claim on average with
 
 
 ## Preparing your submission
-TODO: Maybe it is better to explicity ask all participants to download their models in `installation` instead of doing it in system_inference, since otherwise downloading the model counts towards the time...
+This repository also serves as a valid system submission, executable on our virtual machine. Every system submission must contain the following two files:
 
-This repository also serves as a valid submission, executable on our virtual machine. Every system submission must contain the following two files:
-
-0. A `download_data.sh` which downloads all relevant AVeriTec data (knowledge store and test data), and it should not be modified. AVeriTeC test data will be downloaded into `data_store/averitec/test.json` and the knowledge store will be downloaded into `knowledge_store/test/`
-1. An `installation.sh` which sets up a conda environment for your system and installs all relevant packages, and other dependencies (e.g. Java, any models that need to be preloaded etc.)
-2. A configured `system_inference.sh`, which runs the inference pipeline of the system, finishing with the system's final output. 
+0. DO NOT MODIFY: A `download_data.sh` which downloads all relevant AVeriTec data (knowledge store and test data). AVeriTeC test data will be downloaded into `data_store/averitec/test.json` and the knowledge store will be downloaded into `knowledge_store/test/`
+1. MODIFY: An `installation.sh` which sets up a conda environment for your system and installs all relevant packages, and other dependencies (e.g. Java, any models that need to be preloaded etc.)
+2. MODIFY: A configured `system_inference.sh`, which runs the inference pipeline of the system, finishing with the system's final output. 
 
 The pipeline for running a submitted system on the virtual machine will consists of three calls:
 
