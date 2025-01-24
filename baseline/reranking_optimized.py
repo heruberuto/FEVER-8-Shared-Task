@@ -171,7 +171,7 @@ def main(args):
                     if len(le.strip()) > 0
                 ]
                 query_length = len(query)
-                sentences = [sent['sentence'] for sent in example[f'top_{10000}']][:args.retrieved_top_k]
+                sentences = [sent['sentence'] for sent in example[f'top_{5000}']][:args.retrieved_top_k]
                 
                 st = time.time()
                 try:
@@ -198,7 +198,7 @@ def main(args):
                     
                     scores = np.array(all_scores)
                     top_k_idx = np.argsort(scores)[::-1]
-                    results = [example['top_10000'][i] for i in top_k_idx]
+                    results = [example['top_5000'][i] for i in top_k_idx]
                     top_k_sentences_urls = select_top_k(claim, results, args.top_k)
                     
                     print(f"Top {args.top_k} retrieved. Time elapsed: {time.time() - st:.2f}s")
@@ -232,7 +232,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--target_data", default="data_store/dev_retrieval_top_k.json")
-    parser.add_argument("--retrieved_top_k", type=int, default=10000)
+    parser.add_argument("--retrieved_top_k", type=int, default=5000)
     parser.add_argument("--top_k", type=int, default=10)
     parser.add_argument("-o", "--json_output", type=str, default="data_store/dev_reranking_top_k.json")
     parser.add_argument("--batch_size", type=int, default=32)

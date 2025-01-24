@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Check if /opt/dlami/nvme exists, if not use current directory
-# if [ -d "/opt/dlami/nvme" ]; then
-#     BASE_PATH="/opt/dlami/nvme"
-# else
-#     BASE_PATH="."
-# fi
-
 BASE_PATH="."
 
 # Create required directories if they don't exist

@@ -3,14 +3,6 @@
 # System configuration
 SYSTEM_NAME="baseline"  # Change this to "HerO", "Baseline", etc.
 SPLIT="dev"  # Change this to "dev", or "test"
-
-# Set paths based on whether it is on AWS instance
-# if [ -d "/opt/dlami/nvme" ]; then
-#     BASE_DIR="/opt/dlami/nvme"
-# else
-#     BASE_DIR="."  # Current directory
-# fi
-
 BASE_DIR="."  # Current directory
 
 DATA_STORE="${BASE_DIR}/data_store"
@@ -23,7 +15,7 @@ mkdir -p "${DATA_STORE}/${SYSTEM_NAME}"
 mkdir -p "${KNOWLEDGE_STORE}/${SPLIT}"
 mkdir -p "${HF_HOME}"
 
-export HUGGING_FACE_HUB_TOKEN="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"
+export HUGGING_FACE_HUB_TOKEN="YOUR_TOKEN"
 
 # Execute each script from src directory
 python baseline/hyde_fc_generation_optimized.py \
@@ -39,7 +31,7 @@ python baseline/retrieval_optimized.py \
 python baseline/reranking_optimized.py \
     --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_retrieval_top_k.json" \
     --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_reranking_top_k.json" \
-    --retrieved_top_k 300 || exit 1
+    --retrieved_top_k 500 || exit 1
 
 python baseline/question_generation_optimized.py \
     --reference_corpus "${DATA_STORE}/averitec/${SPLIT}.json" \
