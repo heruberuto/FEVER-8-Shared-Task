@@ -1,4 +1,4 @@
-# FEVER Shared Task 2025
+# FEVER 8 Shared Task
 
 In this year's workshop, we will introduce a new shared task focused on efficient, reproducible and open-source approaches to automated fact-checking. The motivation was the observation from the [7th FEVER workshop shared task](https://fever.ai/2024/task.html), that most of the 21 participating systems, including some of the best performing ones, relied on large, closed source, proprietary models. We would like to challenge participants this year to improve in these aspects, and we will also include [improved evaluation](https://arxiv.org/abs/2411.05375) and a new more recent test set of real-world claims.
 
@@ -31,7 +31,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
  #### Docker Image
 
  We provide a Docker image with the exact configuration as the EC2 virtual machine. You can download the following image:
- - An empty docker image, preconfigured like the virtual machine, [here](https://drive.google.com/file/d/1-AiMrgjWUmcSPFehCF7wI13HJerT3MlO/view?usp=sharing)
+ - An empty docker image, preconfigured like the virtual machine, [here](https://drive.google.com/file/d/1-AiMrgjWUmcSPFehCF7wI13HJerT3MlO/view?usp=sharing). The docker was created using the setup in `docker_setup` and running `docker build -t averitec .`.
 
  To load the docker, execute `gunzip -c averitec.tar.gz | docker load` and to start the docker with the image, run `docker run --gpus all -it averitec`.
 
@@ -73,15 +73,13 @@ At inference time, a submitted system must verify a single claim on average with
 
 
 ## Preparing your submission
-TODO: Maybe it is better to explicity ask all participants to download their models in `installation` instead of doing it in system_inference, since otherwise downloading the model counts towards the time...
+This repository also serves as a valid system submission, executable on our virtual machine. Every system submission must contain the following two files:
 
-This repository also serves as a valid submission, executable on our virtual machine. Every system submission must contain the following two files:
+0. DO NOT MODIFY: A `download_data.sh` which downloads all relevant AVeriTec data (knowledge store and test data). AVeriTeC test data will be downloaded into `data_store/averitec/test.json` and the knowledge store will be downloaded into `knowledge_store/test/`
+1. MODIFY: An `installation.sh` which sets up a conda environment for your system and installs all relevant packages, and other dependencies (e.g. Java, any models that need to be preloaded etc.)
+2. MODIFY: A configured `system_inference.sh`, which runs the inference pipeline of the system, finishing with the system's final output. 
 
-0. A `download_data.sh` which downloads all relevant AVeriTec data (knowledge store and test data), and it should not be modified. AVeriTeC test data will be downloaded into `data_store/averitec/test.json` and the knowledge store will be downloaded into `knowledge_store/test/`
-1. An `installation.sh` which sets up a conda environment for your system and installs all relevant packages, and other dependencies (e.g. Java, any models that need to be preloaded etc.)
-2. A configured `system_inference.sh`, which runs the inference pipeline of the system, finishing with the system's final output. 
-
-The pipeline for running a submitted system on the virtual machine will consists of three calls:
+The pipeline for running a submitted system on the virtual machine will consists of the following calls:
 
 ```bash
 download_data.sh
@@ -102,12 +100,3 @@ A system can be submitted either:
 
 The baseline (located in `baseline/`) for the AVeriTeC Shared Task 2025 is a computationally optimized version of the [HerO system](https://github.com/ssu-humane/HerO), proposed by the SSU-Humane Team for the AVeriTeC 2024 Shared Task. The baseline largely follows their code, and only optimizes the computations of the HerO pipeline.
 
-# INTERN
-
-Set up of docker
-
-```bash
-docker build -t averitec .
-
-docker run --gpus all -it averitec
-```

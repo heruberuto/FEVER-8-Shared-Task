@@ -19,6 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     git \
     wget \
+    ssh \
+    vim \
+    htop \
+    tmux \
+    screen \
+    net-tools \
+    iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
 # Create ubuntu user and set up home directory
@@ -28,6 +35,8 @@ RUN useradd -m -d /home/ubuntu -s /bin/bash ubuntu && \
 # Switch to the ubuntu user
 USER ubuntu
 WORKDIR /home/ubuntu
+
+ENV EC2_HOME=/home/ubuntu
 
 # Install Miniconda
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
