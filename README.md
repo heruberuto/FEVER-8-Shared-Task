@@ -1,6 +1,7 @@
 # FEVER Shared Task 2025
 
-[ADD DESCRIPTION FROM WEBSITE ONCE THERE]
+In this year's workshop, we will introduce a new shared task focused on efficient, reproducible and open-source approaches to automated fact-checking. The motivation was the observation from the [7th FEVER workshop shared task](https://fever.ai/2024/task.html), that most of the 21 participating systems, including some of the best performing ones, relied on large, closed source, proprietary models. We would like to challenge participants this year to improve in these aspects, and we will also include [improved evaluation](https://arxiv.org/abs/2411.05375) and a new more recent test set of real-world claims.
+
 
 ## Evaluation of Shared Task Systems
 
@@ -69,7 +70,8 @@ All systems will be executed on the EC2 instance storage `/opt/dlami/nvme`.
 
 ### Efficiency
 
-[ADD DESCRIPTION]
+At inference time, a submitted system must verify a single claim on average within *at most* 1 minute. A valid system submission must run on the aforementioned VM within the specified time constraints.
+
 
 ## Preparing your submission
 TODO: Maybe it is better to explicity ask all participants to download their models in `installation` instead of doing it in system_inference, since otherwise downloading the model counts towards the time...
