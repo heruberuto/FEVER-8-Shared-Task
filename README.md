@@ -31,7 +31,7 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
  #### Docker Image
 
  We provide a Docker image with the exact configuration as the EC2 virtual machine. You can download the following image:
- - An empty docker image, preconfigured like the virtual machine, [here](https://drive.google.com/file/d/1-AiMrgjWUmcSPFehCF7wI13HJerT3MlO/view?usp=sharing)
+ - An empty docker image, preconfigured like the virtual machine, [here](https://drive.google.com/file/d/1-AiMrgjWUmcSPFehCF7wI13HJerT3MlO/view?usp=sharing). The docker was created using the setup in `docker_setup` and running `docker build -t averitec .`.
 
  To load the docker, execute `gunzip -c averitec.tar.gz | docker load` and to start the docker with the image, run `docker run --gpus all -it averitec`.
 
@@ -102,12 +102,3 @@ A system can be submitted either:
 
 The baseline (located in `baseline/`) for the AVeriTeC Shared Task 2025 is a computationally optimized version of the [HerO system](https://github.com/ssu-humane/HerO), proposed by the SSU-Humane Team for the AVeriTeC 2024 Shared Task. The baseline largely follows their code, and only optimizes the computations of the HerO pipeline.
 
-# INTERN
-
-Set up of docker
-
-```bash
-docker build -t averitec .
-
-docker run --gpus all -it averitec
-```
