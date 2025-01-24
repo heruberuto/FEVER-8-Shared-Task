@@ -79,7 +79,7 @@ This repository also serves as a valid system submission, executable on our virt
 1. MODIFY: An `installation.sh` which sets up a conda environment for your system and installs all relevant packages, and other dependencies (e.g. Java, any models that need to be preloaded etc.)
 2. MODIFY: A configured `system_inference.sh`, which runs the inference pipeline of the system, finishing with the system's final output. 
 
-The pipeline for running a submitted system on the virtual machine will consists of three calls:
+The pipeline for running a submitted system on the virtual machine will consists of the following calls:
 
 ```bash
 download_data.sh
