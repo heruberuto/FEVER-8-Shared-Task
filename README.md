@@ -1,13 +1,19 @@
 # FEVER Shared Task 2025
 
-[ADD DESCRIPTION FROM WEBSITE ONCE THERE]
+In this year's workshop, we will introduce a new shared task focused on efficient, reproducible and open-source approaches to automated fact-checking. The motivation was the observation from the [7th FEVER workshop shared task](https://fever.ai/2024/task.html), that most of the 21 participating systems, including some of the best performing ones, relied on large, closed source, proprietary models. We would like to challenge participants this year to improve in these aspects, and we will also include [improved evaluation](https://arxiv.org/abs/2411.05375) and a new more recent test set of real-world claims.
+
 
 ## Evaluation of Shared Task Systems
 
 The shared task evaluates fact-checking systems on AVeriTeC across three dimensions:
 
 ### Prediction performance
-[ADD ONCE READY]
+The AVeriTec scoring is built on the [FEVER scorer](https://github.com/sheffieldnlp/fever-scorer). The scoring script can be found on the [AVeriTeC Dataset page](https://fever.ai/dataset/averitec.html).
+
+- For the Ev2R score, the following changes are made to the FEVER scorer:
+Claims in Fact-Checking datasets are typically supported or refuted by evidence, or there is not enough evidence. We add a fourth class: conflicting evidence/cherry-picking. This covers both conflicting evidence, and technically true claims that mislead by excluding important context, i.e., the claim has both supporting and refuting evidence.
+- Unlike in FEVER using a closed source of evidence such as Wikipedia, AVERITEC is intended for use with evidence retrieved from the open web. Since the same evidence may be found in different sources, we cannot rely on exact matching to score retrieved evidence. As such, we instead rely on approximate matching. Specifically, we use the Ev2R to find an optimal matching of provided evidence to annotated evidence.
+
 
 ### Reproducibility
 
@@ -26,7 +32,6 @@ The virtual machine is a [g5.2xlarge EC2 instance](https://aws.amazon.com/de/ec2
 
  We provide a Docker image with the exact configuration as the EC2 virtual machine. You can download the following image:
  - An empty docker image, preconfigured like the virtual machine, [here](https://drive.google.com/file/d/1-AiMrgjWUmcSPFehCF7wI13HJerT3MlO/view?usp=sharing)
- - A docker image with an installation of the baseline system, [here, TODO]()
 
  To load the docker, execute `gunzip -c averitec.tar.gz | docker load` and to start the docker with the image, run `docker run --gpus all -it averitec`.
 
@@ -64,7 +69,8 @@ All systems will be executed on the EC2 instance storage `/opt/dlami/nvme`.
 
 ### Efficiency
 
-[ADD DESCRIPTION]
+At inference time, a submitted system must verify a single claim on average within *at most* 1 minute. A valid system submission must run on the aforementioned VM within the specified time constraints.
+
 
 ## Preparing your submission
 TODO: Maybe it is better to explicity ask all participants to download their models in `installation` instead of doing it in system_inference, since otherwise downloading the model counts towards the time...
