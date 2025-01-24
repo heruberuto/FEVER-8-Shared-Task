@@ -52,6 +52,6 @@ python baseline/veracity_prediction_optimized.py \
     --output_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
     --model "humane-lab/Meta-Llama-3.1-8B-HerO" || exit 1
 
-python baseline/averitec_evaluate.py \
+python averitec_evaluate.py \
     --prediction_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
     --label_file "${DATA_STORE}/averitec/${SPLIT}.json" || exit 1
