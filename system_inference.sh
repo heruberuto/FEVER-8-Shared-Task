@@ -31,7 +31,7 @@ python baseline/retrieval_optimized.py \
 python baseline/reranking_optimized.py \
     --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_retrieval_top_k.json" \
     --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_reranking_top_k.json" \
-    --retrieved_top_k 500 || exit 1
+    --retrieved_top_k 500 --batch_size 128 || exit 1
 
 python baseline/question_generation_optimized.py \
     --reference_corpus "${DATA_STORE}/averitec/${SPLIT}.json" \
