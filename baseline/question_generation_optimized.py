@@ -10,6 +10,24 @@ from vllm import LLM, SamplingParams
 from datetime import datetime, timedelta
 from itertools import islice
 
+
+def download_nltk_data(package_name, download_dir='nltk_data'):
+    # Ensure the download directory exists
+    os.makedirs(download_dir, exist_ok=True)
+    
+    # Set NLTK data path
+    nltk.data.path.append(download_dir)
+    
+    try:
+        # Try to find the resource
+        nltk.data.find(f'tokenizers/{package_name}')
+        print(f"Package '{package_name}' is already downloaded")
+    except LookupError:
+        # If resource isn't found, download it
+        print(f"Downloading {package_name}...")
+        nltk.download(package_name, download_dir=download_dir)
+        print(f"Successfully downloaded {package_name}")
+
 def format_time(seconds):
     """Format time duration nicely."""
     return str(timedelta(seconds=round(seconds)))
@@ -47,6 +65,10 @@ def main(args):
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"Script started at: {start_time}")
     print(f"Loading model: {args.model}")
+
+
+    download_nltk_data('punkt')
+    download_nltk_data('punkt_tab')
 
     # Load and prepare reference corpus
     corpus_start = time.time()
