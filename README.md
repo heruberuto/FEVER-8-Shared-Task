@@ -8,11 +8,9 @@ In this year's workshop, we will introduce a new shared task focused on efficien
 The shared task evaluates fact-checking systems on AVeriTeC across three dimensions:
 
 ### Prediction performance
-The AVeriTec scoring is built on the [AVeriTeC scorer](https://github.com/sheffieldnlp/fever-scorer), with a few key changes:
+The AVeriTec scoring is built on the [FEVER scorer](https://github.com/sheffieldnlp/fever-scorer), with a few key changes:
 - Claims in Fact-Checking datasets are typically supported or refuted by evidence, or there is not enough evidence. We add a fourth class: conflicting evidence/cherry-picking. This covers both conflicting evidence, and technically true claims that mislead by excluding important context, i.e., the claim has both supporting and refuting evidence.
-- Unlike FEVER, using a closed source of evidence such as Wikipedia, AVERITEC is intended for use with evidence retrieved from the open web. Since the same evidence may be found in different sources, we cannot rely on exact matching to score retrieved evidence. As such, we instead rely on approximate matching. Specifically, we use the [Ev2R score](https://arxiv.org/abs/2411.05375). to find an optimal matching of provided evidence to annotated evidence.
-
-The evaluation thus follows the previously shared task. However, the Hungarian Meteor score is replaced with the [Ev2R score](https://arxiv.org/abs/2411.05375) score.
+- Unlike FEVER, using a closed source of evidence such as Wikipedia, AVERITEC is intended for use with evidence retrieved from the open web. Since the same evidence may be found in different sources, we cannot rely on exact matching to score retrieved evidence. As such, we instead rely on approximate matching. Specifically, we use the [Ev2R score](https://arxiv.org/abs/2411.05375) to find an optimal matching of provided evidence to annotated evidence. The Ev2R score thus replaces the Hungarian Meteor score used in the [previous shared task](https://fever.ai/2024/task.html).
 
 
 ### Reproducibility
