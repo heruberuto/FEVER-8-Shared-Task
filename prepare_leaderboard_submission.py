@@ -3,15 +3,14 @@
 # Created by zd302 at 12/01/2025
 import csv
 import json
+import argparse
 
-def convert(file_json):
+def convert(file_json, system_name):
     with open(file_json) as f:
         samples = json.load(f)
 
     new_samples = []
     for i, sample in enumerate(samples):
-        if i == 12:
-            print("hello")
         if "gold" in file_json:
             claim = sample['claim']
             label = sample['label']
@@ -49,7 +48,7 @@ def convert(file_json):
             writer.writerows(new_samples)
 
     if "pred" in file_json:
-        with open("submission1.csv", mode="w", newline="") as file:
+        with open("leaderboard_submission/{}_submission.csv".format(system_name), mode="w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(["id", "claim", "evi", "label", "split"])  # Write header
             writer.writerows(new_samples)
@@ -57,15 +56,21 @@ def convert(file_json):
     print("{} have been converted to .csv".format(file_json))
 
 def main():
-    filename = 'dev'  # test, dev
-    username = 'rami_50s'  # rami_40s, rami_50s, rami_150s, HerO
-    test_annotation_file = "../annotations/averitec_{}_gold.json".format(filename)
-    user_submission_file = "../{}_{}_pred.json".format(username, filename)
 
-    convert(test_annotation_file)
-    convert(user_submission_file)
+    parser = argparse.ArgumentParser(description='Process annotation files')
+    
+    # Add arguments
+    parser.add_argument('--filename', type=str, default='data_store/baseline/dev_veracity_prediction.json',
+                        help='Dataset filename (default: dev)')
+    parser.add_argument('--system_name', type=str, default='baseline',
+                        help='Dataset filename (default: dev)')
+    
+    # Parse arguments
+    args = parser.parse_args()
 
-    print("hello")
+    convert(args.filename, args.system_name)
+
+    print("Done.")
 
 
 if __name__ == "__main__":
