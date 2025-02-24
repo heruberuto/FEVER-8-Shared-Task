@@ -171,7 +171,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default="humane-lab/Meta-Llama-3.1-70B-HerO")
+    parser.add_argument('--model', default="humane-lab/Meta-Llama-3.1-8B-HerO")
     parser.add_argument("-i", "--target_data", default="data_store/averitec/dev.json")
     parser.add_argument("-o", "--output_file", default="data_store/dev_veracity_prediction.json")
     parser.add_argument("--batch_size", type=int, default=8, help="Batch size for processing")
