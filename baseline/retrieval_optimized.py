@@ -217,7 +217,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--top_k",
-        default=10000,
+        default=5000,
         type=int,
         help="How many documents should we pick out with BM25.",
     )
