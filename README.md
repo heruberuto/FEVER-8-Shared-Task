@@ -77,7 +77,7 @@ This repository also serves as a valid system submission, executable on our virt
 1. MODIFY: An `installation.sh` which sets up a conda environment for your system and installs all relevant packages, and other dependencies (e.g. Java, any models that need to be preloaded etc.)
 2. MODIFY: A configured `system_inference.sh`, which runs the inference pipeline of the system, finishing with the system's final output. 
 
-The pipeline for running a submitted system on the virtual machine will consists of the following calls:
+The pipeline for running a submitted system on the virtual machine will consist of the following calls:
 
 ```bash
 download_data.sh
@@ -96,5 +96,13 @@ A system can be submitted either:
 
 ## Baseline 
 
-The baseline (located in `baseline/`) for the AVeriTeC Shared Task 2025 is a computationally optimized version of the [HerO system](https://github.com/ssu-humane/HerO), proposed by the SSU-Humane Team for the AVeriTeC 2024 Shared Task. The baseline largely follows their code, and only optimizes the computations of the HerO pipeline.
+The baseline (located in `baseline/`) for the AVeriTeC Shared Task 2025 is a computationally optimized version of the [HerO system](https://github.com/ssu-humane/HerO), proposed by the SSU-Humane Team for the AVeriTeC 2024 Shared Task. The baseline largely follows their code, and only optimizes the computations of the HerO pipeline. To run the baseline, execute the commands above:
+
+```bash
+download_data.sh
+installation.sh
+conda activate hero
+run_system.sh
+```
+
 
