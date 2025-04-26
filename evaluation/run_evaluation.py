@@ -339,28 +339,6 @@ class EV2REvaluator:
             print(e)
             return ""
 
-    # def query_llama33_hf(self, prompt):
-    #     import transformers
-    #     import torch
-    #     _LLAMA33_MODEL_HF = transformers.pipeline(
-    #         "text-generation",
-    #         model="meta-llama/Llama-3.3-70B-Instruct",
-    #         model_kwargs={"torch_dtype": torch.bfloat16},
-    #         device_map="auto",
-    #     )
-    #     try:
-    #         messages = [
-    #             {"role": "user", "content": prompt},
-    #         ]
-    #         outputs = _LLAMA33_MODEL_HF(messages, do_sample=False, max_new_tokens=self.MAX_TOKENS)
-    #         response_llm = outputs[0]["generated_text"][-1]["content"].strip()
-    #         matches = re.findall(r'\{(.*?)\}', response_llm, re.DOTALL)
-    #         response = "{" + matches[0] + "}"
-    #         return response
-    #
-    #     except Exception as e:
-    #         print(e)
-    #         return ""
 
     def prepare_prompt(self, tgt_sample, pred_sample, input_type):
         """Formats prompt using dataset sample as input."""
@@ -585,15 +563,15 @@ def main():
     # Add arguments
     # convert golden_dev.json to solution.csv  (https://github.com/Raldir/FEVER-8-Shared-Task/blob/main/prepare_leaderboard_submission.py)
     # convert prediction_dev.json to submission.csv
-    parser.add_argument('--reference', type=str, default='solution.csv',
+    parser.add_argument('--label_file', type=str, default='evaluation/solution.csv',
                         help='Golden data filename.')
-    parser.add_argument('--prediction', type=str, default='submission.csv',
+    parser.add_argument('--prediction_file', type=str, default='leaderboard_submission/submission.csv',
                         help='Predicted data filename')
     # Parse arguments
     args = parser.parse_args()
 
     #
-    compute(args.reference, args.prediction)
+    compute(args.label_file, args.prediction_file)
 
 
 if __name__ == "__main__":
