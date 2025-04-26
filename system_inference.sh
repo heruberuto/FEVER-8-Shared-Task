@@ -44,6 +44,8 @@ python baseline/veracity_prediction_optimized.py \
     --output_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
     --model "humane-lab/Meta-Llama-3.1-8B-HerO" || exit 1
 
+python prepare_leaderboard_submission.py --filename "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" || exit 1
+
 python averitec_evaluate.py \
-    --prediction_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
-    --label_file "${DATA_STORE}/averitec/${SPLIT}.json" || exit 1
+    --prediction_file "leaderboard_submission/submission.csv" \
+    --label_file "leaderboard_submission/solution_dev.csv" || exit 1

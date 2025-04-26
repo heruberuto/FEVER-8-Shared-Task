@@ -7,11 +7,6 @@ In this year's workshop, we will introduce a new shared task focused on efficien
 
 The shared task evaluates fact-checking systems on AVeriTeC across three dimensions:
 
-### Prediction performance
-The AVeriTec scoring is built on the [FEVER scorer](https://github.com/sheffieldnlp/fever-scorer), with a few key changes:
-- Claims in Fact-Checking datasets are typically supported or refuted by evidence, or there is not enough evidence. We add a fourth class: conflicting evidence/cherry-picking. This covers both conflicting evidence, and technically true claims that mislead by excluding important context, i.e., the claim has both supporting and refuting evidence.
-- Unlike FEVER, using a closed source of evidence such as Wikipedia, AVERITEC is intended for use with evidence retrieved from the open web. Since the same evidence may be found in different sources, we cannot rely on exact matching to score retrieved evidence. As such, we instead rely on approximate matching. Specifically, we use the [Ev2R score](https://arxiv.org/abs/2411.05375) to find an optimal matching of provided evidence to annotated evidence. The Ev2R score thus replaces the Hungarian Meteor score used in the [previous shared task](https://fever.ai/2024/task.html).
-
 
 ### Reproducibility
 
@@ -68,6 +63,15 @@ All systems will be executed on the EC2 instance storage `/opt/dlami/nvme`.
 ### Efficiency
 
 At inference time, a submitted system must verify a single claim on average within *at most* 1 minute. A valid system submission must run on the aforementioned VM within the specified time constraints.
+
+
+### Prediction performance
+The AVeriTec scoring is built on the [FEVER scorer](https://github.com/sheffieldnlp/fever-scorer), with a few key changes:
+- Claims in Fact-Checking datasets are typically supported or refuted by evidence, or there is not enough evidence. We add a fourth class: conflicting evidence/cherry-picking. This covers both conflicting evidence, and technically true claims that mislead by excluding important context, i.e., the claim has both supporting and refuting evidence.
+- Unlike FEVER, using a closed source of evidence such as Wikipedia, AVERITEC is intended for use with evidence retrieved from the open web. Since the same evidence may be found in different sources, we cannot rely on exact matching to score retrieved evidence. As such, we instead rely on approximate matching. Specifically, we use the [Ev2R score](https://arxiv.org/abs/2411.05375) to find an optimal matching of provided evidence to annotated evidence. The Ev2R score thus replaces the Hungarian Meteor score used in the [previous shared task](https://fever.ai/2024/task.html).
+- The shared task uses `Llama 3.3 70B` as the grader.
+
+The evaluation script is located in `evaluation/run_evaluation` and is called automatically by `system_inference.sh`. The script requires the use of an API key to run the Llama model. The script takes substential time to run, with about 4 hours on the dev set. Note that the evaluation script is identical to the one executed on the Huggingface Leaderboard. Therefore, the input format of both predictions and gold answers have to be in .csv format. The script `prepare_leaderboard_submission.py` can be used for the conversion into the right format.
 
 
 ## Preparing your submission
