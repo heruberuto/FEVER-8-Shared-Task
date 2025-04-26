@@ -8,6 +8,13 @@ import torch
 from aenum import MultiValueEnum
 from torch.utils.data import DataLoader
 
+# todo set path to checkpoints
+# DEBERTA_MODEL = "../pseudo_trained_scorer/checkpoint-140000"
+DEBERTA_MODEL = "ctu-aic/deberta-v3-large-AVeriTeC-nli"
+PATH_DEBERTA_TOKENIZER = "ctu-aic/deberta-v3-large-AVeriTeC-nli"
+# PATH_DEBERTA_TOKENIZER = "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli"
+DEBERT_TRAINING_ARGS = "pseudo_trained_scorer/checkpoint-140000/training_args.bin"
+
 
 class TestType(Enum):
     ROBUST_NOISE = "robustness_noise"
@@ -51,6 +58,7 @@ class PromptTypes(enum.Enum):
     TOT = "tot"
     ATOMIC_FACTS = "atomic"
     ATOMIC_REFERENCE_FACTS = "atomic_reference"
+    ATOMIC_QUESTION_REFERENCE_FACTS_PREC_RECALL = "atomic_question_reference_prec_recall"
     ATOMIC_REFERENCE_FACTS_PREC_RECALL = "atomic_reference_prec_recall"
     SCORE = "score"
     METEOR = "meteor"
@@ -64,6 +72,22 @@ class PromptTypes(enum.Enum):
 class ScoreMetrics(enum.Enum):
     PRECISION = "precision"
     RECALL = "recall"
+
+
+# [new code MA]
+class DebertaScorerDataset(torch.utils.data.Dataset):
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
+        self.labels = labels
+
+    def __getitem__(self, idx):
+        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+        item['labels'] = torch.tensor(self.labels[idx])
+
+        return item
+
+    def __len__(self):
+        return len(self.labels)
 
 
 class PseudoTrainedScorerDataset(torch.utils.data.Dataset):
@@ -108,25 +132,25 @@ class Label(MultiValueEnum):
     # CONF = "conflicting evidence/cherrypicking", "conflicting/cherry-picking"
 
 
-LABEL_DICT = {
-    Label.SUPPORTED: 0,
-    Label.NEI: 1,
-    Label.REFUTED: 2,
-    # Label.CONF: 3,
-}
-LABEL_DICT_TO_TEXT = {
-    Label.SUPPORTED: "supported",
-    Label.NEI: "not enough information",
-    Label.REFUTED: "refuted",
-    # Label.CONF: "conflicting evidence/cherrypicking",
-}
-
-LABEL_DICT_REVERSE = {
-    0: "supported",
-    1: "not enough information",
-    2: "refuted",
-    3: "conflicting evidence/cherrypicking",
-}
+# LABEL_DICT = {
+#     Label.SUPPORTED: 0,
+#     Label.NEI: 1,
+#     Label.REFUTED: 2,
+#     # Label.CONF: 3,
+# }
+# LABEL_DICT_TO_TEXT = {
+#     Label.SUPPORTED: "supported",
+#     Label.NEI: "not enough information",
+#     Label.REFUTED: "refuted",
+#     # Label.CONF: "conflicting evidence/cherrypicking",
+# }
+#
+# LABEL_DICT_REVERSE = {
+#     0: "supported",
+#     1: "not enough information",
+#     2: "refuted",
+#     3: "conflicting evidence/cherrypicking",
+# }
 
 
 @dataclass
@@ -437,13 +461,60 @@ label is refuted
 
 """
 
+ATOMIC_QUESTION_REFERENCE_PROMPT_PREC_RECALL = """
+You will get as input a claim, a set of reference questions and a set of predicted questions. 
+Please verify the correctness of predicted questions by comparing them to reference questions, following these steps:
+1. Evaluate each question in PREDICTED questions individually: is the question supported by the REFERENCE questions? Do not use additional sources or background knowledge.
+2. Evaluate each question in REFERENCE questions individually: is the question supported by the PREDICTED questions? Do not use additional sources or background knowledge.
+3. Finally summarise (1.) how many predicted questions are supported by the reference questions, (2.) how many reference questions are supported by the predicted questions.
+
+Generate the output in form of a json as shown in the examples below.
+-----
+Examples:
+
+Claim: Hunter Biden had no experience in Ukraine or in the energy sector when he joined the board of Burisma.
+Reference questions: Did Hunter Biden have any experience in the energy sector at the time he joined the board of the Burisma energy company in 2014? Did Hunter Biden have any experience in Ukraine at the time he joined the board of the Burisma energy company in 2014? 
+Predicted questions: What specific qualifications or skills did Hunter Biden possess that made him a suitable candidate for the board of Burisma? Was Hunter Biden's appointment to the Burisma board influenced by his father's position as Vice President, and if so, how? Did Hunter Biden have any prior connections or relationships with individuals involved in the Ukrainian energy sector before joining Burisma?
+Output: {{
+            "facts in predicted questions": "1. What specific qualifications or skills did Hunter Biden possess that made him a suitable candidate for the board of Burisma? 2. Was Hunter Biden's appointment to the Burisma board influenced by his father's position as Vice President, and if so, how? 3. Did Hunter Biden have any prior connections or relationships with individuals involved in the Ukrainian energy sector before joining Burisma?",
+            "fact check predicted questions": "1. What specific qualifications or skills did Hunter Biden possess that made him a suitable candidate for the board of Burisma? The reference questions mention Hunter Biden's experience but do not directly address his qualifications or skills. Not enough information. 2. Was Hunter Biden's appointment to the Burisma board influenced by his father's position as Vice President, and if so, how? The reference questions do not mention anything about the father of the Hunter Biden. Not enough information. 3. Did Hunter Biden have any prior connections or relationships with individuals involved in the Ukrainian energy sector before joining Burisma? The reference questions do not mention anything about the connections or relationships between Hunter Biden and Ukrainian. Not enough information.",
+            "facts count predicted questions": 3, 
+            "support predicted questions": 0, 
+            "facts in reference questions": "1. Did Hunter Biden have any experience in the energy sector at the time he joined the board of the Burisma energy company in 2014? 2. Did Hunter Biden have any experience in Ukraine at the time he joined the board of the Burisma energy company in 2014?",
+            "fact check reference questions": "1. Did Hunter Biden have any experience in the energy sector at the time he joined the board of the Burisma energy company in 2014? The predicted questions do not mention the experience of Hunter biden in the energy sector at the time of his appointment. Not enough information. 2. Did Hunter Biden have any experience in Ukraine at the time he joined the board of the Burisma energy company in 2014? The predicted questions do not mention anything about the experience of Hunter Biden in Ukraine. Not enough information",
+            "facts count reference questions": 2, 
+            "support reference questions": 0
+        }}
+
+Claim: Margaret Sanger was a racist who believed in eugenics. Her goal when founding Planned Parenthood was to eradicate minorities.
+Reference questions: What is eugenics? What were Sangers views on eugenics? Was Sanger a racist? Was Sanger a eugenicist?
+Predicted questions: What is the definition of racism, and how does it relate to the claim that Margaret Sanger was a racist? Was Margaret Sanger a member of any organizations or groups that promoted eugenics, and if so, what were their goals? Did Margaret Sanger ever express any views or intentions that would suggest she wanted to eradicate minorities? Did Margaret Sanger ever express any views or intentions that would suggest she wanted to eradicate minorities? How does the claim that Margaret Sanger's goal was to eradicate minorities align with the actual mission and goals of Planned Parenthood, as stated by Sanger herself? 
+Output: {{
+            "facts in predicted questions": "1. What is the definition of racism, and how does it relate to the claim that Margaret Sanger was a racist? 2. Was Margaret Sanger a member of any organizations or groups that promoted eugenics, and if so, what were their goals? 3. Did Margaret Sanger ever express any views or intentions that would suggest she wanted to eradicate minorities? 4. How does the claim that Margaret Sanger's goal was to eradicate minorities align with the actual mission and goals of Planned Parenthood, as stated by Sanger herself?",
+            "fact check predicted questions": "1. What is the definition of racism, and how does it relate to the claim that Margaret Sanger was a racist? The reference questions address the claim of Sanger being a racist, but do not mention the definition of racism. Not enough information. 2. Was Margaret Sanger a member of any organizations or groups that promoted eugenics, and if so, what were their goals? The reference questions do not mention anything about the goals of organizations or groups that promoted eugenics. Not enough information. 3. Did Margaret Sanger ever express any views or intentions that would suggest she wanted to eradicate minorities? The reference questions do not mention anything about eradicate minorities. Not enough information. 4. How does the claim that Margaret Sanger's goal was to eradicate minorities align with the actual mission and goals of Planned Parenthood, as stated by Sanger herself? The reference questions do not mention anything about the mission and goals of planned parenthood or Sanger’s own statements. Not enough information.",
+            "facts count predicted questions": 4, 
+            "support predicted questions": 0, 
+            "facts in reference questions": "1. What is eugenics? 2. What were Sangers views on eugenics? 3. Was Sanger a racist? 4. Was Sanger a eugenicist?",
+            "fact check reference questions": "1. What is eugenics? The predicted questions do not mention the concept of eugenics. 2. What were Sangers views on eugenics? The predicted questions do not mention that the views of Sanger on eugenics. Not enough information. 3. Was Sanger a racist? The predicted questions mention the definition of racism. 4. Was Sanger a eugenicist? The predicted questions do not mentioned Sangers identification. Not enough information.",
+            "facts count reference questions": 4, 
+            "support reference questions": 0
+        }}
+-----
+Input: 
+
+Claim: {}
+Reference questions: {}
+Predicted questions: {}
+Output:
+"""
+
 ATOMIC_REFERENCE_PROMPT_PREC_RECALL = """
 You will get as input a claim, a reference evidence and a predicted evidence. 
 Please verify the correctness of the predicted evidence by comparing it to the reference evidence, following these steps:
 1. Break down the PREDICTED evidence in independent facts. Each fact should be a separate sentence. 
-3. Evaluate each fact individually: is the fact supported by the REFERENCE evidence? Do not use additional sources or background knowledge.
-4. Next, break down the REFERENCE evidence in independent facts. Each fact should be a separate sentence.
-5. Evaluate each fact individually: is the fact supported by the PREDICTED evidence? Do not use additional sources or background knowledge.
+2. Evaluate each fact individually: is the fact supported by the REFERENCE evidence? Do not use additional sources or background knowledge.
+3. Next, break down the REFERENCE evidence in independent facts. Each fact should be a separate sentence.
+4. Evaluate each fact individually: is the fact supported by the PREDICTED evidence? Do not use additional sources or background knowledge.
 5. Finally summarise (1.) how many predicted facts are supported by the reference evidence, (2.) how many reference facts are supported by the predicted evidence.
 
 Generate the output in form of a json as shown in the examples below.
@@ -673,6 +744,7 @@ PROMPT_MAPPING = {
     PromptTypes.TOT: TOT_PROMPT,
     PromptTypes.ATOMIC_FACTS: ATOMIC_PROMPT,  # is the REFERENCE LESS prompt
     PromptTypes.ATOMIC_REFERENCE_FACTS: ATOMIC_REFERENCE_PROMPT,
+    PromptTypes.ATOMIC_QUESTION_REFERENCE_FACTS_PREC_RECALL: ATOMIC_QUESTION_REFERENCE_PROMPT_PREC_RECALL,
     PromptTypes.ATOMIC_REFERENCE_FACTS_PREC_RECALL: ATOMIC_REFERENCE_PROMPT_PREC_RECALL,
     # is the REFERENCE-BASED prompt
     PromptTypes.SCORE: SCORE_PROMPT
