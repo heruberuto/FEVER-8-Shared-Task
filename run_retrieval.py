@@ -37,7 +37,7 @@ if __name__ == "__main__":
     submission = []
     dump = []
 
-    for dp in tqdm(datapoints[:1]):
+    for dp in tqdm(datapoints):
         result = pipeline(dp)
         submission.append(result.to_submission())
         dump.append(result)
