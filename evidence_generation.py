@@ -14,6 +14,8 @@ from openai import OpenAI
 from rank_bm25 import BM25Okapi
 import nltk
 
+if "OPENAI_API_KEY" not in os.environ:
+    os.environ["OPENAI_API_KEY"] = "sk-dummy"
 
 @dataclass
 class Evidence:

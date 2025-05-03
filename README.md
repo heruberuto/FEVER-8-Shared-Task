@@ -1,6 +1,25 @@
-# FEVER 8 Shared Task
+# AIC CTU System at FEVER 8
+Quick and dirty setup:
 
-In this year's workshop, we will introduce a new shared task focused on efficient, reproducible and open-source approaches to automated fact-checking. The motivation was the observation from the [7th FEVER workshop shared task](https://fever.ai/2024/task.html), that most of the 21 participating systems, including some of the best performing ones, relied on large, closed source, proprietary models. We would like to challenge participants this year to improve in these aspects, and we will also include [improved evaluation](https://arxiv.org/abs/2411.05375) and a new more recent test set of real-world claims.
+```bash
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm ~/miniconda3/miniconda.sh
+
+source ~/miniconda3/bin/activate
+conda init bash
+
+cd /opt/dlami/nvme/
+git clone https://github.com/heruberuto/FEVER-8-Shared-Task
+cd fever-8-shared-task
+
+download_data.sh
+installation.sh
+conda activate hero
+run_system.sh
+```
+
 
 
 ## Evaluation of Shared Task Systems

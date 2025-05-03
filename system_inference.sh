@@ -1,52 +1,44 @@
 #!/bin/bash
 
 # System configuration
-SYSTEM_NAME="baseline"  # Change this to "HerO", "Baseline", etc.
+SYSTEM_NAME="aic"  # Change this to "HerO", "Baseline", etc.
 SPLIT="dev"  # Change this to "dev", or "test"
-BASE_DIR="."  # Current directory
+export BASE_PATH=$(pwd)  # Current directory
 
-DATA_STORE="${BASE_DIR}/data_store"
-VECTOR_STORE="${BASE_DIR}/vector_store"
-KNOWLEDGE_STORE="${BASE_DIR}/knowledge_store"
-export HF_HOME="${BASE_DIR}/huggingface_cache"
+DATA_STORE="${BASE_PATH}/data_store"
+VECTOR_STORE="${BASE_PATH}/vector_store"
+KNOWLEDGE_STORE="${BASE_PATH}/knowledge_store"
+export HF_HOME="${BASE_PATH}/huggingface_cache"
+export VECSTORE_PATH="$BASE_PATH/data_store/vector_store"
+export RESULTS_PATH="$BASE_PATH/data_store/results"
+export PROMPTS_PATH="$BASE_PATH/data_store/llm_prompts"
+export SUBMISSION_PATH="$BASE_PATH/data_store/submissions"
+export DATASET_FILE="$BASE_PATH/data_store/averitec/test_2025.json"
+export TRAIN_FILE="$BASE_PATH/data_store/averitec/train.json"
+export PIPELINE_NAME="aic"
+export RESPONSE_PATH="$BASE_PATH/data_store/qwen_responses"
 
 # Create necessary directories
 mkdir -p "${DATA_STORE}/averitec"
 mkdir -p "${DATA_STORE}/${SYSTEM_NAME}"
 mkdir -p "${KNOWLEDGE_STORE}/${SPLIT}"
 mkdir -p "${HF_HOME}"
+mkdir -p "${DATA_STORE}/averitec"
+mkdir -p "${DATA_STORE}/${SYSTEM_NAME}"
+mkdir -p "${KNOWLEDGE_STORE}/${SPLIT}"
+mkdir -p "${HF_HOME}"
+mkdir -p "$VECSTORE_PATH"
+mkdir -p "$RESULTS_PATH"
+mkdir -p "$PROMPTS_PATH"
+mkdir -p "$SUBMISSION_PATH"
+mkdir -p "$(dirname "$DATASET_FILE")"
+mkdir -p "$(dirname "$TRAIN_FILE")"
+mkdir -p "$RESPONSE_PATH"
 
-export HUGGING_FACE_HUB_TOKEN="YOUR_TOKEN"
+python3 run_retrieval.py
+python3 run_generation.py
+python3 prepare_leaderboard_submission.py --filename "${SUBMISSION_PATH}/${SYSTEM_NAME}.json" || exit 1
 
-# Execute each script from src directory
-python baseline/hyde_fc_generation_optimized.py \
-    --target_data "${DATA_STORE}/averitec/${SPLIT}.json" \
-    --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_hyde_fc.json" || exit 1
-
-python baseline/retrieval_optimized.py \
-    --knowledge_store_dir "${KNOWLEDGE_STORE}/${SPLIT}" \
-    --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_hyde_fc.json" \
-    --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_retrieval_top_k.json" \
-    --top_k 5000 || exit 1
-
-python baseline/reranking_optimized.py \
-    --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_retrieval_top_k.json" \
-    --json_output "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_reranking_top_k.json" \
-    --retrieved_top_k 500 --batch_size 128 || exit 1
-
-python baseline/question_generation_optimized.py \
-    --reference_corpus "${DATA_STORE}/averitec/${SPLIT}.json" \
-    --top_k_target_knowledge "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_reranking_top_k.json" \
-    --output_questions "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_top_k_qa.json" \
-    --model "meta-llama/Meta-Llama-3-8B-Instruct" || exit 1
-
-python baseline/veracity_prediction_optimized.py \
-    --target_data "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_top_k_qa.json" \
-    --output_file "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" \
-    --model "humane-lab/Meta-Llama-3.1-8B-HerO" || exit 1
-
-python prepare_leaderboard_submission.py --filename "${DATA_STORE}/${SYSTEM_NAME}/${SPLIT}_veracity_prediction.json" || exit 1
-
-python averitec_evaluate.py \
+python3 averitec_evaluate.py \
     --prediction_file "leaderboard_submission/submission.csv" \
-    --label_file "leaderboard_submission/solution_dev.csv" || exit 1
+    --label_file "leaderboard_submission/solution_test.csv" || exit 1
