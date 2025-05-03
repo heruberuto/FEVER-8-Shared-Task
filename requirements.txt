@@ -1,6 +1,5 @@
-torch==2.4.0
+torch==2.6.0
 accelerate==1.1.0
-transformers==4.46.1
 deepspeed==0.15.3
 tokenizers==0.20.2
 datasets==3.1.0
@@ -10,11 +9,16 @@ nltk==3.9.1
 rank_bm25==0.2.2
 scipy==1.14.1
 scikit-learn==1.5.2
+ipywidgets
+langchain
 sentence_transformers
-
+faiss-gpu
+langchain-huggingface
+langchain-community
 aenum==3.1.15
 google-generativeai==0.8.3
 huggingface_hub
 numpy
 pandas
 openai
+dirtyjson

@@ -6,6 +6,7 @@ SPLIT="dev"  # Change this to "dev", or "test"
 BASE_DIR="."  # Current directory
 
 DATA_STORE="${BASE_DIR}/data_store"
+VECTOR_STORE="${BASE_DIR}/vector_store"
 KNOWLEDGE_STORE="${BASE_DIR}/knowledge_store"
 export HF_HOME="${BASE_DIR}/huggingface_cache"
 

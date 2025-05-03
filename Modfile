@@ -1,0 +1,4 @@
+FROM qwen3:14b
+
+PARAMETER num_ctx 22000
+PARAMETER num_predict 10000

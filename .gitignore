@@ -1,5 +1,6 @@
 /logs
 /nltk_data
+/vector_store/*
 /data_store/averitec/*.json
 /data_store/baseline
 /data_sotre/olmo2_baseline
