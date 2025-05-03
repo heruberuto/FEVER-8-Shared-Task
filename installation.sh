@@ -3,13 +3,15 @@ export BASE_PATH=$(pwd) # Current directory
 
 if [ ! -d "${BASE_PATH}/data_store/vector_store" ]; then
     mkdir -p "${BASE_PATH}/data_store/vector_store"
-    
-    VECTOR_STORE="reduced"
+    VECTOR_STORE="full"
     #VECTOR_STORE="reduced" # works the same while much smaller, but claim was used to prune the data
+
+    echo "Downloading ${VECTOR_STORE} vector store..."
 
     curl -O "https://fever8-aic.s3.eu-west-2.amazonaws.com/${VECTOR_STORE}.tar.zst"
     tar --zstd -xvf "${VECTOR_STORE}.tar.zst" --strip-components=1 -C "${BASE_PATH}/data_store/vector_store"
     rm -f "${VECTOR_STORE}.tar.zst"
+    echo "Vector store downloaded and extracted to ${BASE_PATH}/data_store/vector_store"
 fi
 
 # Create required directories if they don't exist
@@ -26,14 +28,25 @@ chmod -R 777 "${BASE_PATH}/data_store"
 curl -o "${BASE_PATH}/data_store/averitec/test_2025.json" "https://fever8-aic.s3.eu-west-2.amazonaws.com/test_2025.json"  
 
 source ~/miniconda3/etc/profile.d/conda.sh
+sleep 1
+export ENV_NAME="aic"
 
-ENV_NAME="aic"
-if conda info --envs | grep -q "^$ENV_NAME[[:space:]]"; then
+if conda info --envs | grep -qE "^$ENV_NAME\s"; then
     conda deactivate
-    conda remove -n "$ENV_NAME" --all -y
+    echo "🧹 Removing Conda environment: $ENV_NAME"
+    conda remove --name "$ENV_NAME" --all -y
+else
+    echo "No Conda environment named '$ENV_NAME' found."
 fi
+
+if [ -d "$ENV_PATH" ]; then
+    echo "🗑️  Removing leftover directory: $ENV_PATH"
+    rm -rf "$ENV_PATH"
+else
+    echo "✅ No leftover directory found at $ENV_PATH"
+fi
+
 sleep 2
-# Create and activate environment
 conda create -n $ENV_NAME python=3.10 -y  # Added -y for non-interactive
 sleep 2 # Increased sleep time for readability
 

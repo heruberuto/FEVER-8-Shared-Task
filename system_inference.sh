@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # System configuration
-SYSTEM_NAME="aic"  # Change this to "HerO", "Baseline", etc.
+export SYSTEM_NAME="aic"  # Change this to "HerO", "Baseline", etc.
 SPLIT="dev"  # Change this to "dev", or "test"
 export BASE_PATH=$(pwd)  # Current directory
 
@@ -35,7 +35,9 @@ mkdir -p "$(dirname "$DATASET_FILE")"
 mkdir -p "$(dirname "$TRAIN_FILE")"
 mkdir -p "$RESPONSE_PATH"
 
+# echo "🕵🏻‍♂️ Fact-checking starting: step #1 🕵🏻‍♂️ Document Retrieval"
 python3 run_retrieval.py
+# echo "Step #2 🦙 Ollama inference"
 python3 run_generation.py
 python3 prepare_leaderboard_submission.py --filename "${SUBMISSION_PATH}/${SYSTEM_NAME}.json" || exit 1
 
