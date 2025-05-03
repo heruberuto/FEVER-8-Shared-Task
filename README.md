@@ -19,6 +19,6 @@ conda activate aic
 ./run_system.sh
 ```
 
-For any debugging or precomputed CSVS, please get in touch with me at FEVER Slack or via email at ullriher@fal.cvut.cz
+For any debugging or precomputed CSVS, please get in touch with me at FEVER Slack or via email at ullriher@fel.cvut.cz
 
 
