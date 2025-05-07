@@ -2,13 +2,19 @@
 export BASE_PATH=$(pwd) # Current directory
 
 if [ ! -d "${BASE_PATH}/data_store/vector_store" ]; then
-    mkdir -p "${BASE_PATH}/data_store/vector_store"
     VECTOR_STORE="full"
     #VECTOR_STORE="reduced" # works the same while much smaller, but claim was used to prune the data
 
     echo "Downloading ${VECTOR_STORE} vector store..."
 
-    curl -O "https://fever8-aic.s3.eu-west-2.amazonaws.com/${VECTOR_STORE}.tar.zst"
+    if curl -f -O "https://fever8-aic.s3.eu-west-2.amazonaws.com/${VECTOR_STORE}.tar.zst"; then
+        echo "Downloaded from S3 successfully."
+    else
+        echo "S3 download failed, trying Hugging Face..."
+        curl -L -o "${VECTOR_STORE}.tar.zst" "https://huggingface.co/datasets/ctu-aic/averitec-embeddings/resolve/main/test_2025_${VECTOR_STORE}.tar.zst"
+    fi
+
+    mkdir -p "${BASE_PATH}/data_store/vector_store"
     tar --zstd -xvf "${VECTOR_STORE}.tar.zst" --strip-components=1 -C "${BASE_PATH}/data_store/vector_store"
     rm -f "${VECTOR_STORE}.tar.zst"
     echo "Vector store downloaded and extracted to ${BASE_PATH}/data_store/vector_store"
