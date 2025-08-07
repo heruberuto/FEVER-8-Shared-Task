@@ -27,7 +27,7 @@ if __name__ == "__main__":
     results_path = os.environ.get("RESULTS_PATH", "data_store/results")
     prompts = os.environ.get("PROMPTS_PATH", "data_store/llm_prompts")
     submission_path = os.environ.get("SUBMISSION_PATH", "data_store/submissions")
-    dataset_file = os.environ.get("DATASET_FILE", "data_store/averitec/test_2025.json")
+    dataset_file = os.environ.get("DATASET_FILE", "data_store/averitec/dev.json")
     train_file = os.environ.get("TRAIN_FILE", "data_store/averitec/train.json")
     PIPELINE_NAME = os.environ.get("SYSTEM_NAME", "aic")
     response_path = os.environ.get("RESPONSE_PATH", "data_store/qwen_responses")
