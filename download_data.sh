@@ -18,7 +18,7 @@ fi
 
 if [ ! -f "$BASE_PATH/data_store/averitec/test_2025.json" ]; then
     wget https://huggingface.co/chenxwh/AVeriTeC/resolve/main/data/test_2025.json -O $BASE_PATH/data_store/averitec/test_2025.json
-fi
+ficd dat
 
 # For knowledge store - dev set
 if [ ! -d "$BASE_PATH/knowledge_store/dev" ]; then
