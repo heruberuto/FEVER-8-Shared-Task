@@ -10,6 +10,7 @@ from utils.chat import SimpleJSONChat
 
 @dataclass
 class RetrievalResult:
+    """Container for retrieved documents with list-like interface."""
     documents: List[Document] = field(default_factory=list)
     metadata: Dict[str, Any] = None
 
@@ -24,11 +25,13 @@ class RetrievalResult:
 
 
 class Retriever:
+    """Base class for document retrieval strategies."""
     def __call__(self, datapoint: Datapoint, *args, **kwargs) -> RetrievalResult:
         raise NotImplementedError
 
 
 class SimpleFaissRetriever(Retriever):
+    """Retrieves documents using cosine similarity search in FAISS vector store."""
     def __init__(self, path: str, embeddings: Embeddings = None, k: int = 10):
         self.path = path
         if embeddings is None:
@@ -47,6 +50,7 @@ class SimpleFaissRetriever(Retriever):
 
 
 class MmrFaissRetriever(Retriever):
+    """Retrieves diverse documents using Maximum Marginal Relevance to reduce redundancy."""
     def __init__(
         self, path: str, embeddings: Embeddings = None, k: int = 10, fetch_k: int = 40, lambda_mult=0.7
     ):
@@ -71,6 +75,7 @@ class MmrFaissRetriever(Retriever):
 
 
 class SubqueryRetriever(Retriever):
+    """Multi-query retrieval using LLM-generated subqueries for comprehensive coverage."""
     def __init__(self, retriever: Retriever, k=10, fetch_k=50, subqueries=5, lambda_mult=0.5, model="gpt-4o"):
         self.retriever = retriever
         self.k = k
@@ -83,6 +88,7 @@ class SubqueryRetriever(Retriever):
         )
 
     def get_subqueries(self, datapoint):
+        """Generates targeted search queries for different aspects of the claim."""
         return self.client(f"{datapoint.claim} ({datapoint.speaker}, {datapoint.claim_date})") + [
             datapoint.claim
         ]
