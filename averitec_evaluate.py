@@ -253,7 +253,6 @@ class AVeriTeCEvaluator:
 
 
 class EV2REvaluator:
-
     verdicts = [
         "Supported",
         "Refuted",
@@ -266,18 +265,17 @@ class EV2REvaluator:
     # LLM
     MAX_TOKENS = 3000
     TEMPERATURE = 0
+    OPENAI_MODEL = os.getenv("OPENAI_EVAL_MODEL", "gpt-5.2")
 
     # -------------------------
-    llamaapi_api_token = (
-        ""  # To obtain the LLAMA API token, please visit this URL: https://console.llmapi.com/en/dashboard
-    )
-    llamaapi_client = OpenAI(api_key=llamaapi_api_token, base_url="https://api.llmapi.com/")
+    openai_client = None
     # -------------------------
 
     def __init__(self, properties=None):
         self.properties = properties
         self.prompt_type = properties.PromptTypes("atomic_reference_prec_recall")
         self.prompt_type1 = properties.PromptTypes("atomic_question_reference_prec_recall")
+        self.openai_client = OpenAI()
 
     def prepare_dataset(self, srcs, tgts):
         pred_questions = []
@@ -342,16 +340,16 @@ class EV2REvaluator:
 
         return pred_questions, ref_questions, pred_qa_pairs, ref_qa_pairs
 
-    def query_llama33_llamaapi(self, prompt):
+    def query_openai(self, prompt):
         try:
             messages = [
                 {"role": "user", "content": prompt},
             ]
 
-            completion = self.llamaapi_client.chat.completions.create(
+            completion = self.openai_client.chat.completions.create(
                 messages=messages,
-                model="llama3.3-70b",
-                temperature=self.TEMPERATURE,
+                model=self.OPENAI_MODEL,
+                # temperature=self.TEMPERATURE,
                 max_tokens=self.MAX_TOKENS,
             )
             response_llm = completion.choices[0].message.content
@@ -472,7 +470,7 @@ class EV2REvaluator:
             attempt = 0
             while attempt < self.MAX_RETRIES:
                 try:
-                    response = self.query_llama33_llamaapi(prompt)
+                    response = self.query_openai(prompt)
                     responses.append(self.process_output(tgt_sample, response))
                     print("One request successfully processed..")
                     break
