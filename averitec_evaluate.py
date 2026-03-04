@@ -346,12 +346,24 @@ class EV2REvaluator:
                 {"role": "user", "content": prompt},
             ]
 
-            completion = self.openai_client.chat.completions.create(
-                messages=messages,
-                model=self.OPENAI_MODEL,
+            request_kwargs = {
+                "messages": messages,
+                "model": self.OPENAI_MODEL,
                 # temperature=self.TEMPERATURE,
-                max_tokens=self.MAX_TOKENS,
-            )
+            }
+
+            try:
+                completion = self.openai_client.chat.completions.create(
+                    **request_kwargs, max_completion_tokens=self.MAX_TOKENS
+                )
+            except Exception as e:
+                # Backward compatibility for models that still expect max_tokens.
+                if "max_completion_tokens" in str(e) and "max_tokens" in str(e):
+                    completion = self.openai_client.chat.completions.create(
+                        **request_kwargs, max_tokens=self.MAX_TOKENS
+                    )
+                else:
+                    raise
             response_llm = completion.choices[0].message.content
             matches = re.findall(r"\{(.*?)\}", response_llm, re.DOTALL)
             response = "{" + matches[0] + "}"
@@ -531,23 +543,105 @@ class EV2REvaluator:
 
 
 def compute(solution_file, submission_file):
+    def _join_qa_pairs(pairs):
+        """Convert list of (question, answer) pairs into legacy evi string format."""
+        return "".join(f"{q}\t\t\n{a}\t\t\n\n" for q, a in pairs)
+
+    def _json_submission_to_df(path):
+        with open(path) as f:
+            samples = json.load(f)
+
+        rows = []
+        for i, sample in enumerate(samples):
+            qa_pairs = []
+            for src_qa in sample.get("evidence", []):
+                question = str(src_qa.get("question", "")).strip()
+                answer = str(src_qa.get("answer", "")).strip()
+                if question or answer:
+                    qa_pairs.append((question, answer))
+
+            rows.append(
+                {
+                    "id": i,
+                    "claim_id": sample.get("claim_id", i),
+                    "claim": sample.get("claim", ""),
+                    "evi": _join_qa_pairs(qa_pairs),
+                    "label": sample.get("pred_label", sample.get("label", "")),
+                    "split": "pred",
+                }
+            )
+        return pd.DataFrame(rows)
+
+    def _json_gold_to_df(path):
+        with open(path) as f:
+            samples = json.load(f)
+
+        rows = []
+        for i, sample in enumerate(samples):
+            qa_pairs = []
+            for question_item in sample.get("questions", []):
+                question = str(question_item.get("question", "")).strip()
+                answers = question_item.get("answers", [])
+                if not isinstance(answers, list):
+                    answers = [answers]
+                if len(answers) == 0:
+                    qa_pairs.append((question, "No answer could be found."))
+                    continue
+
+                for answer_item in answers:
+                    answer_text = "No answer could be found."
+                    if isinstance(answer_item, dict):
+                        answer_text = str(answer_item.get("answer", answer_text)).strip()
+                    elif answer_item is not None:
+                        answer_text = str(answer_item).strip()
+                    qa_pairs.append((question, answer_text))
+
+            rows.append(
+                {
+                    "id": i,
+                    "claim_id": sample.get("claim_id", i),
+                    "claim": sample.get("claim", ""),
+                    "evi": _join_qa_pairs(qa_pairs),
+                    "label": sample.get("label", ""),
+                    "split": sample.get("split", "gold"),
+                }
+            )
+        return pd.DataFrame(rows)
+
+    def _load_dataframe(path, is_solution):
+        if path.lower().endswith(".json"):
+            return _json_gold_to_df(path) if is_solution else _json_submission_to_df(path)
+        return pd.read_csv(path)
+
     # import properties.py  (Huggingface competition)
     sys.path.append(os.path.dirname("properties.py"))
     properties = importlib.import_module("properties")
 
     # load golden and predicted file
-    solution_df = pd.read_csv(solution_file)  # golden file
-    submission_df = pd.read_csv(submission_file)  # predicted file
+    solution_df = _load_dataframe(solution_file, is_solution=True)  # golden file
+    submission_df = _load_dataframe(submission_file, is_solution=False)  # predicted file
 
     # config on Huggingface competition
-    public_ids = solution_df[solution_df.split == "gold"]["id"].values
-    public_solution_df = solution_df[solution_df["id"].isin(public_ids)]
-    public_submission_df = submission_df[submission_df["id"].isin(public_ids)]
+    if "claim_id" in solution_df.columns and "claim_id" in submission_df.columns:
+        public_ids = solution_df[solution_df.split == "gold"]["claim_id"].values
+        public_solution_df = solution_df[solution_df["claim_id"].isin(public_ids)].copy()
+        public_submission_df = submission_df[submission_df["claim_id"].isin(public_ids)].copy()
 
-    public_solution_df = public_solution_df.sort_values("id").reset_index(drop=True)
-    public_submission_df = public_submission_df.sort_values("id").reset_index(drop=True)
+        public_solution_df = public_solution_df.sort_values("claim_id").reset_index(drop=True)
+        public_submission_df = public_submission_df.sort_values("claim_id").reset_index(drop=True)
 
-    target_cols = [col for col in solution_df.columns if col not in ["split"]]
+        # Keep legacy "id" semantics expected by the EV2R scoring code.
+        public_solution_df["id"] = np.arange(len(public_solution_df))
+        public_submission_df["id"] = np.arange(len(public_submission_df))
+    else:
+        public_ids = solution_df[solution_df.split == "gold"]["id"].values
+        public_solution_df = solution_df[solution_df["id"].isin(public_ids)]
+        public_submission_df = submission_df[submission_df["id"].isin(public_ids)]
+
+        public_solution_df = public_solution_df.sort_values("id").reset_index(drop=True)
+        public_submission_df = public_submission_df.sort_values("id").reset_index(drop=True)
+
+    target_cols = [col for col in solution_df.columns if col not in ["split", "claim_id"]]
 
     # Evaluation on old AVeriTeC score (Hungarian meteor) and new AVeriTeC score (EV2R recall)
     # AVeriTeC Score
@@ -611,15 +705,15 @@ def compute(solution_file, submission_file):
 def main():
     parser = argparse.ArgumentParser(description="Process annotation files")
     # Add arguments
-    # convert golden_dev.json to solution.csv  (https://github.com/Raldir/FEVER-8-Shared-Task/blob/main/prepare_leaderboard_submission.py)
-    # convert prediction_dev.json to submission.csv
+    # JSON format is the original FEVER-style format. Submission conversion key:
+    # prepare_leaderboard_submission.py
     parser.add_argument(
-        "--label_file", type=str, default="evaluation/solution.csv", help="Golden data filename."
+        "--label_file", type=str, default="data/gold/dev_20.json", help="Golden data filename."
     )
     parser.add_argument(
         "--prediction_file",
         type=str,
-        default="leaderboard_submission/submission.csv",
+        default="data/submissions/submission_dev20.json",
         help="Predicted data filename",
     )
     # Parse arguments
