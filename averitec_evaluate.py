@@ -9,6 +9,7 @@ import tqdm
 import time
 import argparse
 import copy
+
 # import properties
 import pandas as pd
 import os
@@ -18,18 +19,16 @@ import re
 from openai import OpenAI
 
 
-
-
-def download_nltk_data(package_name, download_dir='nltk_data'):
+def download_nltk_data(package_name, download_dir="nltk_data"):
     # Ensure the download directory exists
     os.makedirs(download_dir, exist_ok=True)
-    
+
     # Set NLTK data path
     nltk.data.path.append(download_dir)
-    
+
     try:
         # Try to find the resource
-        nltk.data.find(f'tokenizers/{package_name}')
+        nltk.data.find(f"tokenizers/{package_name}")
         print(f"Package '{package_name}' is already downloaded")
     except LookupError:
         # If resource isn't found, download it
@@ -89,23 +88,23 @@ class AVeriTeCEvaluator:
         for i in tqdm.tqdm(range(len(srcs))):
             src_questions, tgt_questions = [], []
             # prediction
-            pred_evidence = srcs.iloc[i]['evi']
-            pred_evi_pairs = pred_evidence.split('\t\t\n\n')
+            pred_evidence = srcs.iloc[i]["evi"]
+            pred_evi_pairs = pred_evidence.split("\t\t\n\n")
 
             for pred_qa in pred_evi_pairs:
-                if pred_qa != '':
-                    pred_question, pred_answer = pred_qa.split('\t\t\n')
+                if pred_qa != "":
+                    pred_question, pred_answer = pred_qa.split("\t\t\n")
                     src_questions.append(pred_question)
 
             src_questions = src_questions[: self.max_questions]
 
             # gold
-            gold_evidence = tgts.iloc[i]['evi']
-            gold_qa_pairs = gold_evidence.split('\t\t\n\n')
+            gold_evidence = tgts.iloc[i]["evi"]
+            gold_qa_pairs = gold_evidence.split("\t\t\n\n")
 
             for gold_qa in gold_qa_pairs:
-                if gold_qa != '':
-                    gold_question, gold_answer = gold_qa.split('\t\t\n')
+                if gold_qa != "":
+                    gold_question, gold_answer = gold_qa.split("\t\t\n")
                     if gold_question not in tgt_questions:
                         tgt_questions.append(gold_question)
 
@@ -150,12 +149,12 @@ class AVeriTeCEvaluator:
         """
         # prediction
         src_strings = []
-        pred_evidence = src['evi']
-        pred_qa_pairs = pred_evidence.split('\t\t\n\n')
+        pred_evidence = src["evi"]
+        pred_qa_pairs = pred_evidence.split("\t\t\n\n")
 
         for qa_pair in pred_qa_pairs:
-            if qa_pair != '':
-                pred_question, pred_answer = qa_pair.split('\t\t\n')
+            if qa_pair != "":
+                pred_question, pred_answer = qa_pair.split("\t\t\n")
                 pred_qa_pairs = pred_question + " " + pred_answer
                 src_strings.append(pred_qa_pairs)
 
@@ -163,12 +162,12 @@ class AVeriTeCEvaluator:
 
         # gold
         tgt_strings = []
-        gold_evidence = tgt['evi']
-        gold_qa_pairs = gold_evidence.split('\t\t\n\n')
+        gold_evidence = tgt["evi"]
+        gold_qa_pairs = gold_evidence.split("\t\t\n\n")
 
         for qa_pair in gold_qa_pairs:
-            if qa_pair != '':
-                gold_question, gold_answer = qa_pair.split('\t\t\n')
+            if qa_pair != "":
+                gold_question, gold_answer = qa_pair.split("\t\t\n")
                 gold_qa_pairs = gold_question + " " + gold_answer
                 tgt_strings.append(gold_qa_pairs)
 
@@ -188,12 +187,12 @@ class AVeriTeCEvaluator:
         for i in tqdm.tqdm(range(len(srcs))):
             # pred
             src_strings = []
-            pred_evidence = srcs.iloc[i]['evi']
-            pred_qa_pairs = pred_evidence.split('\t\t\n\n')
+            pred_evidence = srcs.iloc[i]["evi"]
+            pred_qa_pairs = pred_evidence.split("\t\t\n\n")
 
             for qa_pair in pred_qa_pairs:
-                if qa_pair != '':
-                    pred_question, pred_answer = qa_pair.split('\t\t\n')
+                if qa_pair != "":
+                    pred_question, pred_answer = qa_pair.split("\t\t\n")
                     pred_qa_pairs = pred_question + " " + pred_answer
                     src_strings.append(pred_qa_pairs)
 
@@ -201,12 +200,12 @@ class AVeriTeCEvaluator:
 
             # gold
             tgt_strings = []
-            gold_evidence = tgts.iloc[i]['evi']
-            gold_qa_pairs = gold_evidence.split('\t\t\n\n')
+            gold_evidence = tgts.iloc[i]["evi"]
+            gold_qa_pairs = gold_evidence.split("\t\t\n\n")
 
             for qa_pair in gold_qa_pairs:
-                if qa_pair != '':
-                    gold_question, gold_answer = qa_pair.split('\t\t\n')
+                if qa_pair != "":
+                    gold_question, gold_answer = qa_pair.split("\t\t\n")
                     gold_qa_pair = gold_question + " " + gold_answer
                     tgt_strings.append(gold_qa_pair)
 
@@ -233,24 +232,19 @@ class AVeriTeCEvaluator:
                         evidence["answers"] = [evidence["answers"]]
 
                     for answer in evidence["answers"]:
-                        example_strings.append(
-                            evidence["question"] + " " + answer["answer"]
-                        )
+                        example_strings.append(evidence["question"] + " " + answer["answer"])
                         if (
                             "answer_type" in answer
-                            and answer["answer_type"] == "Boolean" and "boolean_explanation" in answer
+                            and answer["answer_type"] == "Boolean"
+                            and "boolean_explanation" in answer
                         ):
                             example_strings[-1] += ". " + answer["boolean_explanation"]
                     if len(evidence["answers"]) == 0:
-                        example_strings.append(
-                            evidence["question"] + " No answer could be found."
-                        )
+                        example_strings.append(evidence["question"] + " No answer could be found.")
         else:
             if "evidence" in example:
                 for evidence in example["evidence"]:
-                    example_strings.append(
-                        evidence["question"] + " " + evidence["answer"]
-                    )
+                    example_strings.append(evidence["question"] + " " + evidence["answer"])
 
         if "string_evidence" in example:
             for full_string_evidence in example["string_evidence"]:
@@ -274,7 +268,9 @@ class EV2REvaluator:
     TEMPERATURE = 0
 
     # -------------------------
-    llamaapi_api_token = ""     # To obtain the LLAMA API token, please visit this URL: https://console.llmapi.com/en/dashboard
+    llamaapi_api_token = (
+        ""  # To obtain the LLAMA API token, please visit this URL: https://console.llmapi.com/en/dashboard
+    )
     llamaapi_client = OpenAI(api_key=llamaapi_api_token, base_url="https://api.llmapi.com/")
     # -------------------------
 
@@ -291,46 +287,58 @@ class EV2REvaluator:
 
         for i in range(len(srcs)):
             # ------------------------- extract questions and QA pairs from src files
-            src_qa_pairs = srcs.iloc[i]['evi']
-            src_qa_pair_list = src_qa_pairs.split('\t\t\n\n')
+            src_qa_pairs = srcs.iloc[i]["evi"]
+            src_qa_pair_list = src_qa_pairs.split("\t\t\n\n")
 
             src_q_evidence = []
             for _qa_pair in src_qa_pair_list:
-                _ques = _qa_pair.split('\t\t\n')[0]
+                _ques = _qa_pair.split("\t\t\n")[0]
                 if _ques:
                     src_q_evidence.append(_ques)
 
-            pred_questions.append(self.properties.AveritecEntry(claim=srcs.iloc[i]['claim'],
-                                                       label=srcs.iloc[i]['label'],
-                                                       evidence=" ".join(src_q_evidence),
-                                                       id=srcs.iloc[i]['id']
-                                                       ))
-            pred_qa_pairs.append(self.properties.AveritecEntry(claim=srcs.iloc[i]['claim'],
-                                                       label=srcs.iloc[i]['label'],
-                                                       evidence=src_qa_pairs,
-                                                       id=srcs.iloc[i]['id']
-                                                       ))
+            pred_questions.append(
+                self.properties.AveritecEntry(
+                    claim=srcs.iloc[i]["claim"],
+                    label=srcs.iloc[i]["label"],
+                    evidence=" ".join(src_q_evidence),
+                    id=srcs.iloc[i]["id"],
+                )
+            )
+            pred_qa_pairs.append(
+                self.properties.AveritecEntry(
+                    claim=srcs.iloc[i]["claim"],
+                    label=srcs.iloc[i]["label"],
+                    evidence=src_qa_pairs,
+                    id=srcs.iloc[i]["id"],
+                )
+            )
 
             # ------------------------- extract questions and QA pairs from tgt files
-            tgt_qa_pairs = tgts.iloc[i]['evi']
-            tgt_qa_pair_list = tgt_qa_pairs.split('\t\t\n\n')
+            tgt_qa_pairs = tgts.iloc[i]["evi"]
+            tgt_qa_pair_list = tgt_qa_pairs.split("\t\t\n\n")
 
             tgt_q_evidence = []
             for _qa_pair in tgt_qa_pair_list:
-                _ques = _qa_pair.split('\t\t\n')[0]
+                _ques = _qa_pair.split("\t\t\n")[0]
                 if _ques:
                     tgt_q_evidence.append(_ques)
 
-            ref_questions.append(self.properties.AveritecEntry(claim=tgts.iloc[i]['claim'],
-                                                               label=tgts.iloc[i]['label'],
-                                                               evidence=" ".join(tgt_q_evidence),
-                                                               id=tgts.iloc[i]['id']
-                                                               ))
-            ref_qa_pairs.append(self.properties.AveritecEntry(claim=tgts.iloc[i]['claim'],
-                                                              label=tgts.iloc[i]['label'],
-                                                              evidence=tgt_qa_pairs,
-                                                              id=tgts.iloc[i]['id']
-                                                             ))
+            ref_questions.append(
+                self.properties.AveritecEntry(
+                    claim=tgts.iloc[i]["claim"],
+                    label=tgts.iloc[i]["label"],
+                    evidence=" ".join(tgt_q_evidence),
+                    id=tgts.iloc[i]["id"],
+                )
+            )
+            ref_qa_pairs.append(
+                self.properties.AveritecEntry(
+                    claim=tgts.iloc[i]["claim"],
+                    label=tgts.iloc[i]["label"],
+                    evidence=tgt_qa_pairs,
+                    id=tgts.iloc[i]["id"],
+                )
+            )
 
         return pred_questions, ref_questions, pred_qa_pairs, ref_qa_pairs
 
@@ -344,10 +352,10 @@ class EV2REvaluator:
                 messages=messages,
                 model="llama3.3-70b",
                 temperature=self.TEMPERATURE,
-                max_tokens=self.MAX_TOKENS
+                max_tokens=self.MAX_TOKENS,
             )
             response_llm = completion.choices[0].message.content
-            matches = re.findall(r'\{(.*?)\}', response_llm, re.DOTALL)
+            matches = re.findall(r"\{(.*?)\}", response_llm, re.DOTALL)
             response = "{" + matches[0] + "}"
             return response
 
@@ -355,17 +363,16 @@ class EV2REvaluator:
             print(e)
             return ""
 
-
     def prepare_prompt(self, tgt_sample, pred_sample, input_type):
         """Formats prompt using dataset sample as input."""
         if input_type == "qa_pair":
-            prompt = self.properties.PROMPT_MAPPING[self.prompt_type].format(tgt_sample.claim,
-                                                                        tgt_sample.evidence,
-                                                                        pred_sample.evidence)
+            prompt = self.properties.PROMPT_MAPPING[self.prompt_type].format(
+                tgt_sample.claim, tgt_sample.evidence, pred_sample.evidence
+            )
         if input_type == "question":
-            prompt = self.properties.PROMPT_MAPPING[self.prompt_type1].format(tgt_sample.claim,
-                                                                        tgt_sample.evidence,
-                                                                        pred_sample.evidence)
+            prompt = self.properties.PROMPT_MAPPING[self.prompt_type1].format(
+                tgt_sample.claim, tgt_sample.evidence, pred_sample.evidence
+            )
         return prompt
 
     def get_response_text(self, response):
@@ -380,10 +387,14 @@ class EV2REvaluator:
 
     def process_output(self, sample, response):
         logprob_inp = None
-        return self.properties.OpenAIResponse(claim=sample.claim, evidence=sample.evidence,
-                                         response=self.get_response_text(response),
-                                         gold=sample.label.lower(), id=sample.id,
-                                         logprobs=logprob_inp)
+        return self.properties.OpenAIResponse(
+            claim=sample.claim,
+            evidence=sample.evidence,
+            response=self.get_response_text(response),
+            gold=sample.label.lower(),
+            id=sample.id,
+            logprobs=logprob_inp,
+        )
 
     def calculate_question_score_prec_recall_openai_response(self, response_llm):
         response_openai_copy = copy.deepcopy(response_llm)
@@ -395,10 +406,12 @@ class EV2REvaluator:
             else:
                 response = response_llm.response
             response_openai_copy.response = response
-            response_openai_copy.response['precision'] = response["support predicted questions"] / response[
-                "facts count predicted questions"]
-            response_openai_copy.response['recall'] = response["support reference questions"] / response[
-                "facts count reference questions"]
+            response_openai_copy.response["precision"] = (
+                response["support predicted questions"] / response["facts count predicted questions"]
+            )
+            response_openai_copy.response["recall"] = (
+                response["support reference questions"] / response["facts count reference questions"]
+            )
         except Exception as e:
             print("Following exception occurred: {}".format(e))
             return None
@@ -415,10 +428,12 @@ class EV2REvaluator:
             else:
                 response = response_llm.response
             response_openai_copy.response = response
-            response_openai_copy.response['precision'] = response["support predicted evidence"] / response[
-                "facts count predicted evidence"]
-            response_openai_copy.response['recall'] = response["support reference evidence"] / response[
-                "facts count reference evidence"]
+            response_openai_copy.response["precision"] = (
+                response["support predicted evidence"] / response["facts count predicted evidence"]
+            )
+            response_openai_copy.response["recall"] = (
+                response["support reference evidence"] / response["facts count reference evidence"]
+            )
         except Exception as e:
             print("Following exception occurred: {}".format(e))
             return None
@@ -463,7 +478,7 @@ class EV2REvaluator:
                     break
                 except:
                     attempt += 1
-                    wait_time = 10 ** attempt  # Exponential backoff
+                    wait_time = 10**attempt  # Exponential backoff
                     print(f"Request timed out. Retrying in {wait_time} seconds...")
                     time.sleep(wait_time)
 
@@ -478,11 +493,13 @@ class EV2REvaluator:
             #
             for k, ev2r_score in enumerate(qa_evi_scores):
                 if ev2r_score and ev2r_score.id == i:
-                    precision, recall = ev2r_score.response['precision'], ev2r_score.response['recall']
+                    precision, recall = ev2r_score.response["precision"], ev2r_score.response["recall"]
                     #
                     for j, level in enumerate(self.ev2r_reporting_levels):
                         if recall > level:
-                            this_example_scores[j] = 1.0 if srcs.iloc[i]["label"] == tgts.iloc[i]["label"] else 0.0
+                            this_example_scores[j] = (
+                                1.0 if srcs.iloc[i]["label"] == tgts.iloc[i]["label"] else 0.0
+                            )
 
                     scores.append(this_example_scores)
                     ev2r_qa_recall.append(recall)
@@ -495,14 +512,19 @@ class EV2REvaluator:
                 scores.append(this_example_scores)
                 ev2r_qa_recall.append(0.0)
 
-        return np.mean(np.array(scores), axis=0), scores, np.mean(np.array(ev2r_qa_recall), axis=0), ev2r_qa_recall
+        return (
+            np.mean(np.array(scores), axis=0),
+            scores,
+            np.mean(np.array(ev2r_qa_recall), axis=0),
+            ev2r_qa_recall,
+        )
 
     def extract_recall_score(self, evi_scores):
         evi_recall = []
 
         for score in evi_scores:
             if score:
-                precision, recall = score.response['precision'], score.response['recall']
+                precision, recall = score.response["precision"], score.response["recall"]
                 evi_recall.append(recall)
             else:
                 evi_recall.append(0.0)
@@ -516,16 +538,16 @@ def compute(solution_file, submission_file):
     properties = importlib.import_module("properties")
 
     # load golden and predicted file
-    solution_df = pd.read_csv(solution_file)             # golden file
-    submission_df = pd.read_csv(submission_file)         # predicted file
+    solution_df = pd.read_csv(solution_file)  # golden file
+    submission_df = pd.read_csv(submission_file)  # predicted file
 
     # config on Huggingface competition
-    public_ids = solution_df[solution_df.split == "gold"]['id'].values
-    public_solution_df = solution_df[solution_df['id'].isin(public_ids)]
-    public_submission_df = submission_df[submission_df['id'].isin(public_ids)]
+    public_ids = solution_df[solution_df.split == "gold"]["id"].values
+    public_solution_df = solution_df[solution_df["id"].isin(public_ids)]
+    public_submission_df = submission_df[submission_df["id"].isin(public_ids)]
 
-    public_solution_df = public_solution_df.sort_values('id').reset_index(drop=True)
-    public_submission_df = public_submission_df.sort_values('id').reset_index(drop=True)
+    public_solution_df = public_solution_df.sort_values("id").reset_index(drop=True)
+    public_submission_df = public_submission_df.sort_values("id").reset_index(drop=True)
 
     target_cols = [col for col in solution_df.columns if col not in ["split"]]
 
@@ -533,40 +555,54 @@ def compute(solution_file, submission_file):
     # AVeriTeC Score
     scorer = AVeriTeCEvaluator()
     # Q only
-    Q_evidence_score, Q_score_list = scorer.evaluate_questions_only(public_submission_df[target_cols], public_solution_df[target_cols])
+    Q_evidence_score, Q_score_list = scorer.evaluate_questions_only(
+        public_submission_df[target_cols], public_solution_df[target_cols]
+    )
     # Q + A
-    QA_evidence_score, QA_score_list = scorer.evaluate_questions_and_answers(public_submission_df[target_cols], public_solution_df[target_cols])
-    averitec_scores, averitec_score_list = scorer.evaluate_averitec_score(public_submission_df[target_cols], public_solution_df[target_cols])
+    QA_evidence_score, QA_score_list = scorer.evaluate_questions_and_answers(
+        public_submission_df[target_cols], public_solution_df[target_cols]
+    )
+    averitec_scores, averitec_score_list = scorer.evaluate_averitec_score(
+        public_submission_df[target_cols], public_solution_df[target_cols]
+    )
 
     # EV2R Score
     EV2R_scorer = EV2REvaluator(properties)
-    pred_questions, ref_questions, pred_qa_pairs, ref_qa_pairs = EV2R_scorer.prepare_dataset(public_submission_df[target_cols], public_solution_df[target_cols])
+    pred_questions, ref_questions, pred_qa_pairs, ref_qa_pairs = EV2R_scorer.prepare_dataset(
+        public_submission_df[target_cols], public_solution_df[target_cols]
+    )
     # Q only
-    q_responses = EV2R_scorer.prompt_api_model(pred_questions, ref_questions, input_type='question')
+    q_responses = EV2R_scorer.prompt_api_model(pred_questions, ref_questions, input_type="question")
     q_evi_scores = EV2R_scorer.calculate_question_scores(q_responses)
     ev2r_q_recall, q_recall_list = EV2R_scorer.extract_recall_score(q_evi_scores)
     # Q + A
-    qa_responses = EV2R_scorer.prompt_api_model(pred_qa_pairs, ref_qa_pairs, input_type='qa_pair')
+    qa_responses = EV2R_scorer.prompt_api_model(pred_qa_pairs, ref_qa_pairs, input_type="qa_pair")
     qa_evi_scores = EV2R_scorer.calculate_prediction_scores(qa_responses)
-    ev2r_qa_scores, ev2r_qa_scores_list, ev2r_qa_recall, ev2r_qa_recall_list = EV2R_scorer.extract_ev2r_score(public_submission_df[target_cols], public_solution_df[target_cols], qa_evi_scores)
+    ev2r_qa_scores, ev2r_qa_scores_list, ev2r_qa_recall, ev2r_qa_recall_list = EV2R_scorer.extract_ev2r_score(
+        public_submission_df[target_cols], public_solution_df[target_cols], qa_evi_scores
+    )
     #
     evaluation = {
         "public_score": {
             "Q only (Hungarian meteor)": "{}".format(round(Q_evidence_score, 4)),
             "Q + A (Hungarian meteor)": "{}".format(round(QA_evidence_score, 4)),
-            "old AVeriTeC Score (Hungarian meteor)": "{}".format(round(averitec_scores[0], 4)),     # (meteor @ 0.25)
+            "old AVeriTeC Score (Hungarian meteor)": "{}".format(
+                round(averitec_scores[0], 4)
+            ),  # (meteor @ 0.25)
             "Q only (Ev2R recall)": "{}".format(round(ev2r_q_recall, 4)),
             "Q + A (Ev2R recall)": "{}".format(round(ev2r_qa_recall, 4)),
-            "new AVeriTeC score (Ev2R recall)": "{}".format(round(ev2r_qa_scores[0], 4)),           # (recall @ 0.5)
+            "new AVeriTeC score (Ev2R recall)": "{}".format(round(ev2r_qa_scores[0], 4)),  # (recall @ 0.5)
         },
         "private_score": {
             "Q only (Hungarian meteor)": "{}".format(round(Q_evidence_score, 4)),
             "Q + A (Hungarian meteor)": "{}".format(round(QA_evidence_score, 4)),
-            "old AVeriTeC Score (Hungarian meteor)": "{}".format(round(averitec_scores[0], 4)),     # (meteor @ 0.25)
+            "old AVeriTeC Score (Hungarian meteor)": "{}".format(
+                round(averitec_scores[0], 4)
+            ),  # (meteor @ 0.25)
             "Q only (Ev2R recall)": "{}".format(round(ev2r_q_recall, 4)),
             "Q + A (Ev2R recall)": "{}".format(round(ev2r_qa_recall, 4)),
-            "new AVeriTeC score (Ev2R recall)": "{}".format(round(ev2r_qa_scores[0], 4)),           # (recall @ 0.5)
-        }
+            "new AVeriTeC score (Ev2R recall)": "{}".format(round(ev2r_qa_scores[0], 4)),  # (recall @ 0.5)
+        },
     }
     print("\n*****Results of Submission *****\n")
     print(evaluation)
@@ -575,22 +611,26 @@ def compute(solution_file, submission_file):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Process annotation files')
+    parser = argparse.ArgumentParser(description="Process annotation files")
     # Add arguments
     # convert golden_dev.json to solution.csv  (https://github.com/Raldir/FEVER-8-Shared-Task/blob/main/prepare_leaderboard_submission.py)
     # convert prediction_dev.json to submission.csv
-    parser.add_argument('--label_file', type=str, default='evaluation/solution.csv',
-                        help='Golden data filename.')
-    parser.add_argument('--prediction_file', type=str, default='leaderboard_submission/submission.csv',
-                        help='Predicted data filename')
+    parser.add_argument(
+        "--label_file", type=str, default="evaluation/solution.csv", help="Golden data filename."
+    )
+    parser.add_argument(
+        "--prediction_file",
+        type=str,
+        default="leaderboard_submission/submission.csv",
+        help="Predicted data filename",
+    )
     # Parse arguments
     args = parser.parse_args()
 
+    download_nltk_data("punkt")
+    download_nltk_data("punkt_tab")
+    download_nltk_data("wordnet")
 
-    download_nltk_data('punkt')
-    download_nltk_data('punkt_tab')
-    download_nltk_data('wordnet')
-    
     #
     compute(args.label_file, args.prediction_file)
 
